@@ -17,48 +17,44 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, derive the median absolute deviation (MAD).
 # Returns the MAD for each day, and the average across all days overall.
 madByDay <- function(validDays) {
+  mads <- c()
 
-	mads = c()
+  cnames <- c()
+  count <- 1
+  for (vd in validDays) {
+    raw <- getDayGlucoseValues(vd)
 
-	cnames=c()
-	count=1
-	for (vd in validDays) {
+    # MAD of this valid day only
+    madVD <- mad(raw$sgReading, constant = 1, na.rm = TRUE)
 
-		raw = getDayGlucoseValues(vd)
+    # nighttime, daytime aucs
+    raw <- getDayGlucoseValues(vd, night = TRUE)
+    madVDn <- mad(raw$sgReading, constant = 1, na.rm = TRUE)
 
-		# MAD of this valid day only
-		madVD = mad(raw$sgReading, constant=1, na.rm=TRUE)
+    raw <- getDayGlucoseValues(vd, day = TRUE)
+    madVDd <- mad(raw$sgReading, constant = 1, na.rm = TRUE)
 
-		# nighttime, daytime aucs
-		raw = getDayGlucoseValues(vd, night=TRUE)
-		madVDn = mad(raw$sgReading, constant=1, na.rm=TRUE)
-
-		raw = getDayGlucoseValues(vd, day=TRUE)
-		madVDd = mad(raw$sgReading, constant=1, na.rm=TRUE)
-
-		mads = append(mads, c(madVD, madVDn, madVDd))
-		cnames = append(cnames, c(paste("mad_day", count, sep=""), paste("mad_nt_day", count, sep=""), paste("mad_dt_day", count, sep="")))
+    mads <- append(mads, c(madVD, madVDn, madVDd))
+    cnames <- append(cnames, c(paste("mad_day", count, sep = ""), paste("mad_nt_day", count, sep = ""), paste("mad_dt_day", count, sep = "")))
 
 
-                count=count+1
-	}
+    count <- count + 1
+  }
 
 
-	res = rbind(mads)
-        colnames(res) = cnames
+  res <- rbind(mads)
+  colnames(res) <- cnames
 
-	madAv = meanAcrossDays("mad_day", res)
-	madAvN = meanAcrossDays("mad_nt_day", res)
-	madAvD = meanAcrossDays("mad_dt_day", res)
-	othervars = c(madAv, madAvN, madAvD)
-  	othervars = rbind(othervars)
-	colnames(othervars) = c("meanmadPerDay", "meanmadPerDay_nt","meanmadPerDay_dt")
-	res = cbind(res, othervars)
+  madAv <- meanAcrossDays("mad_day", res)
+  madAvN <- meanAcrossDays("mad_nt_day", res)
+  madAvD <- meanAcrossDays("mad_dt_day", res)
+  othervars <- c(madAv, madAvN, madAvD)
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("meanmadPerDay", "meanmadPerDay_nt", "meanmadPerDay_dt")
+  res <- cbind(res, othervars)
 
-	return(res)
-
+  return(res)
 }

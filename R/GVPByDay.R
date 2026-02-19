@@ -17,46 +17,42 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
-# For each valid day in validDays, derive the GVP 
+# For each valid day in validDays, derive the GVP
 # This is just for testing since GLU uses SGVP
 # Returns the GVP for each day, and the average across all days overall.
 GVPByDay <- function(validDays) {
+  gvps <- c()
 
-	gvps = c()	
+  cnames <- c()
+  count <- 1
+  for (vd in validDays) {
+    raw <- getDayGlucoseValues(vd, interp = TRUE)
 
-	cnames=c()
-	count=1
-	for (vd in validDays) {
+    # GVP for whole day, nighttime and daytime GVP
+    gvpVD <- SGVP(raw, FALSE)
+    gvpVDn <- SGVP(getDayGlucoseValues(vd, night = TRUE, interp = TRUE), FALSE)
+    gvpVDd <- SGVP(getDayGlucoseValues(vd, day = TRUE, interp = TRUE), FALSE)
 
-		raw = getDayGlucoseValues(vd, interp=TRUE)
+    gvps <- append(gvps, c(gvpVD, gvpVDn, gvpVDd))
 
-		# GVP for whole day, nighttime and daytime GVP
-		gvpVD = SGVP(raw, FALSE)
-		gvpVDn = SGVP(getDayGlucoseValues(vd, night=TRUE, interp=TRUE), FALSE)
-		gvpVDd = SGVP(getDayGlucoseValues(vd, day=TRUE, interp=TRUE), FALSE)
+    cnames <- append(cnames, c(paste("GVP_day", count, sep = ""), paste("GVP_nt_day", count, sep = ""), paste("GVP_dt_day", count, sep = "")))
 
-		gvps = append(gvps, c(gvpVD, gvpVDn, gvpVDd))
-
-		cnames = append(cnames, c(paste("GVP_day", count, sep=""), paste("GVP_nt_day", count, sep=""), paste("GVP_dt_day", count, sep="")))
-
-                count=count+1
-	}
+    count <- count + 1
+  }
 
 
-	res = rbind(gvps)
-        colnames(res) = cnames
+  res <- rbind(gvps)
+  colnames(res) <- cnames
 
-	# '^' is needed so it doesn't match SGVP..
-	gvpAv = meanAcrossDays("^GVP_day", res)
-	gvpAvN = meanAcrossDays("^GVP_nt_day", res)
-	gvpAvD = meanAcrossDays("^GVP_dt_day", res)
+  # '^' is needed so it doesn't match SGVP..
+  gvpAv <- meanAcrossDays("^GVP_day", res)
+  gvpAvN <- meanAcrossDays("^GVP_nt_day", res)
+  gvpAvD <- meanAcrossDays("^GVP_dt_day", res)
 
-	othervars = c(gvpAv, gvpAvN, gvpAvD)
-	othervars = rbind(othervars)
-	colnames(othervars) = c("meanGVPPerDay", "meanGVPPerDay_nt","meanGVPPerDay_dt")
-	res = cbind(res, othervars)
+  othervars <- c(gvpAv, gvpAvN, gvpAvD)
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("meanGVPPerDay", "meanGVPPerDay_nt", "meanGVPPerDay_dt")
+  res <- cbind(res, othervars)
 
-	return(res)
-
+  return(res)
 }

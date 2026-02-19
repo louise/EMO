@@ -17,19 +17,16 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Extracts user ID from file name of the format: data_export-[USERID].csv
 # Returns user ID value
 getUserIDFromFileName <- function(f) {
+  userID <- unlist(strsplit(f, "data_export-"))[2]
+  userID <- unlist(strsplit(userID, "\\."))[1]
 
-        userID = unlist(strsplit(f, "data_export-"))[2]
-        userID = unlist(strsplit(userID, "\\."))[1]
+  # if not medtronic format then use file name as the participant ID
+  if (is.na(userID)) {
+    userID <- sub("\\..*$", "", f)
+  }
 
-	# if not medtronic format then use file name as the participant ID
-	if (is.na(userID)) {
-		userID = sub('\\..*$', '', f) 
-	}
-
-        return(userID)
+  return(userID)
 }
-

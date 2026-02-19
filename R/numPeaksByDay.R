@@ -17,46 +17,42 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, generate the number of peaks
 # Returns a data frame - the number of peaks in each day, and the average across all days overall.
 numPeaksByDay <- function(validDays) {
+  nps <- c()
 
-	nps = c()
+  # column names for each auc value we generate
+  cnames <- c()
 
-	# column names for each auc value we generate	
-	cnames = c()
+  count <- 1
 
-	count=1
+  # for each valid day, calculate the auc
+  for (vd in validDays) {
+    # sequence of timepoints for this day
+    raw <- vd@glucose
 
-	# for each valid day, calculate the auc
-	for (vd in validDays) {
-		
-		# sequence of timepoints for this day
-		raw = vd@glucose
+    # auc of this day only
+    npVD <- numPeaks(raw)
 
-		# auc of this day only
-		npVD = numPeaks(raw)
+    nps <- append(nps, c(npVD))
 
-		nps = append(nps, c(npVD))
-		
-		cnames = append(cnames, c(paste("numpeaks_day", count, sep="")))
+    cnames <- append(cnames, c(paste("numpeaks_day", count, sep = "")))
 
-                count=count+1
-	}
+    count <- count + 1
+  }
 
-	# set column names for auc values
-	res = rbind(nps)
-	colnames(res) = cnames
+  # set column names for auc values
+  res <- rbind(nps)
+  colnames(res) <- cnames
 
-	npAv = meanAcrossDays("numpeaks_day", res)
+  npAv <- meanAcrossDays("numpeaks_day", res)
 
-	othervars = c(npAv)
-  	othervars = rbind(othervars)
-	colnames(othervars) = c("meannumpeaksperDay")
+  othervars <- c(npAv)
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("meannumpeaksperDay")
 
-	res = cbind(res, othervars)
+  res <- cbind(res, othervars)
 
-	return(res)
-
+  return(res)
 }

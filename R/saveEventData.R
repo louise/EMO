@@ -17,25 +17,19 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Saves data for each event to file.
 saveEventData <- function(events, userID, rs) {
+  if (rs@saveevents == TRUE & nrow(events) > 0) {
+    print("Saving events ...")
 
-	if (rs@saveevents == TRUE & nrow(events)>0) {
+    namePrefix <- userID
+    if (rs@imputeApproximal == TRUE) {
+      namePrefix <- paste(namePrefix, "-impute-approximal", sep = "")
+    } else if (rs@imputeOther == TRUE) {
+      namePrefix <- paste(namePrefix, "-impute-other", sep = "")
+    }
 
-		print("Saving events ...")
-
-		namePrefix = userID
-		if (rs@imputeApproximal==TRUE) {
-	                namePrefix = paste(namePrefix, '-impute-approximal', sep='')
-	        }
-		else if (rs@imputeOther==TRUE) {
-	                namePrefix = paste(namePrefix, '-impute-other', sep='')
-	        }
-
-	        # save event data
-	        write.table(events, file=paste(rs@outdir, "/events/events-", namePrefix, ".csv",sep=""), sep=",", quote=FALSE, row.names=FALSE, na="")
-	
-	}
-
+    # save event data
+    write.table(events, file = paste(rs@outdir, "/events/events-", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE, na = "")
+  }
 }

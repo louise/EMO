@@ -17,41 +17,37 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, derive the fasting proxy SG - the mean of the 30 minutes with the lowest SG values.
 # Returns a data frame of the fasting proxy for each day, and the average across all days overall
 fastingProxyByDay <- function(validDays) {
+  nocts <- c()
 
-	nocts = c()
+  # column names for each auc value we generate
+  cnames <- c()
 
-	# column names for each auc value we generate	
-	cnames = c()
+  count <- 1
 
-	count=1
+  # for each valid day, calculate the auc
+  for (vd in validDays) {
+    nt <- getDayGlucoseValues(vd, night = TRUE)
 
-	# for each valid day, calculate the auc
-	for (vd in validDays) {
+    # nocturnal mean of 3 lowest consecutive values of this day only
+    noctVD <- fastingProxy(nt)
+    nocts <- append(nocts, noctVD)
 
-		nt = getDayGlucoseValues(vd, night=TRUE)
-		
-		# nocturnal mean of 3 lowest consecutive values of this day only
-		noctVD = fastingProxy(nt)
-		nocts = append(nocts, noctVD)
+    cnames <- append(cnames, paste("fastingproxy_day", count, sep = ""))
+    count <- count + 1
+  }
 
-		cnames = append(cnames, paste("fastingproxy_day", count, sep=""))
-                count=count+1
-	}
+  # set column names for auc values
+  res <- rbind(nocts)
+  colnames(res) <- cnames
 
-	# set column names for auc values
-	res = rbind(nocts)
-	colnames(res) = cnames
+  # average across days
+  nocAv <- meanAcrossDays("fastingproxy_day", res)
+  othervars <- rbind(c(nocAv))
+  colnames(othervars) <- c("meanFastingProxyPerDay")
 
-	# average across days
-	nocAv = meanAcrossDays("fastingproxy_day", res)
-  	othervars = rbind(c(nocAv))
-	colnames(othervars) = c("meanFastingProxyPerDay")
-
-	res = cbind(res, othervars)
-	return(res)
-
+  res <- cbind(res, othervars)
+  return(res)
 }

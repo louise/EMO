@@ -17,87 +17,75 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Derives the post event SG - the average of the 15 minute period starting timeGapHours hours after the event.
 # Returns the post event SG value.
 postprandial <- function(raw, eventTime, timeGapHours) {
+  ppStartTime <- eventTime + timeGapHours * 60 * 60
 
-	ppStartTime = eventTime + timeGapHours*60*60
+  # find the nearest timepoint before the start time with a sg reading
+  ppStarts <- which(raw$time <= ppStartTime)
 
-	# find the nearest timepoint before the start time with a sg reading
-	ppStarts = which(raw$time <= ppStartTime)
+  if (length(ppStarts) == 0) {
+    return(NA)
+  }
 
-	if (length(ppStarts)==0) {
-		return(NA)
-	}
-	
-	seq = raw
-	
-	##
-	## get start idx
+  seq <- raw
 
-	ix = max(ppStarts)
-	if (ppStartTime == seq$time[ix] & !is.na(seq$sgReading[ix])) {
-		startIdx = ix
-	}
-	else {
-		return(NA)
-	}
+  ##
+  ## get start idx
 
-	##
-	## get end idx
+  ix <- max(ppStarts)
+  if (ppStartTime == seq$time[ix] & !is.na(seq$sgReading[ix])) {
+    startIdx <- ix
+  } else {
+    return(NA)
+  }
 
-        ppEndTime = eventTime + timeGapHours*60*60 + 15*60
-        ppEnds = which(seq$time <= ppEndTime & !is.na(seq$sgReading))
+  ##
+  ## get end idx
 
-	ix = max(ppEnds)
-        if (ppEndTime == seq$time[ix] & !is.na(seq$sgReading[ix])) {
-                endIdx = ix
-        }
-        else {
-		return(NA)
-        }
+  ppEndTime <- eventTime + timeGapHours * 60 * 60 + 15 * 60
+  ppEnds <- which(seq$time <= ppEndTime & !is.na(seq$sgReading))
 
-	##
-	## sub-sequence for this post-event period
+  ix <- max(ppEnds)
+  if (ppEndTime == seq$time[ix] & !is.na(seq$sgReading[ix])) {
+    endIdx <- ix
+  } else {
+    return(NA)
+  }
 
-	subseq = seq[startIdx:endIdx,]
+  ##
+  ## sub-sequence for this post-event period
 
-	##
-	## calculate AUC for this
+  subseq <- seq[startIdx:endIdx, ]
 
-	subseqAuc = auc(subseq)
+  ##
+  ## calculate AUC for this
 
-	return(subseqAuc)
+  subseqAuc <- auc(subseq)
+
+  return(subseqAuc)
 }
-
-
-
 
 
 # Returns the next 3 SG readings at and after startIdx
 nextThreeSGReadings <- function(raw, startIdx) {
+  # remaining sequence
+  raw <- raw[startIdx:nrow(raw), ]
 
-	# remaining sequence
-	raw = raw[startIdx:nrow(raw),]
+  rawSubset <- c()
+  idxCurrent <- 1
+  while (idxCurrent <= nrow(raw)) {
+    if (!is.na(raw$sgReading[idxCurrent])) {
+      rawSubset <- c(rawSubset, raw$sgReading[idxCurrent])
+    }
 
-	rawSubset = c()
-	idxCurrent = 1
-	while(idxCurrent <= nrow(raw)) {
+    idxCurrent <- idxCurrent + 1
 
-		if (!is.na(raw$sgReading[idxCurrent])) {
+    if (length(rawSubset) == 3) {
+      return(rawSubset)
+    }
+  }
 
-			rawSubset = c(rawSubset, raw$sgReading[idxCurrent])
-		}
-
-		idxCurrent = idxCurrent + 1
-
-		if (length(rawSubset)==3) {
-			return(rawSubset)
-		}
-
-	}
-	
-	return(NA)
-
+  return(NA)
 }

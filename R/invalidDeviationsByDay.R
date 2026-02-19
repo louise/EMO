@@ -17,42 +17,38 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
-# For each valid day store in validDays arg, calculate the number of timepoints that have an 
+# For each valid day store in validDays arg, calculate the number of timepoints that have an
 # invalid SG reading deviation, defined as being >2SD away from the value of the previous timepoint.
 # By the time this function is used, invalid deviations have been marked in the deviationLarge column
 # Returns a data frame containing the number of deviations that occured on each day.
 invalidDeviationsByDay <- function(validDays) {
+  invalidDeviations <- c()
 
-	invalidDeviations = c()
+  # column names for each invalid deviation value we generate
+  cnames <- c()
 
-	# column names for each invalid deviation value we generate	
-	cnames = c()
+  count <- 1
 
-	count=1
+  hasInvalidDeviations <- FALSE
 
-	hasInvalidDeviations = FALSE
+  # for each valid day, calculate the number of invalid deviations
+  for (vd in validDays) {
+    # get number of invalid deviations in this day only
 
-	# for each valid day, calculate the number of invalid deviations
-	for (vd in validDays) {
+    raw <- getDayGlucoseValues(vd)
 
-		# get number of invalid deviations in this day only
+    devs <- length(which(raw$deviationLarge == TRUE))
 
-		raw = getDayGlucoseValues(vd)
+    if (devs > 0) {
+      hasInvalidDeviations <- TRUE
+    }
 
-		devs = length(which(raw$deviationLarge == TRUE))
+    count <- count + 1
+  }
 
-		if (devs>0) {
-			hasInvalidDeviations = TRUE
-		}
-
-                count=count+1
-	}
-
-	# add marker indicating if there are any abnormally large deviations
-	invdevdf = c(hasInvalidDeviations)
-        invdevdf = rbind(invdevdf)
-        colnames(invdevdf) = c("hasInvalidDeviations")
-	return(invdevdf)
-
+  # add marker indicating if there are any abnormally large deviations
+  invdevdf <- c(hasInvalidDeviations)
+  invdevdf <- rbind(invdevdf)
+  colnames(invdevdf) <- c("hasInvalidDeviations")
+  return(invdevdf)
 }

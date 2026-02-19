@@ -24,17 +24,15 @@
 # if running GLU with imputeOther option then includes 'impute-other'
 # E.g. '-1234-imputed'
 derivedFilePrefix <- function(rs) {
+  # set name prefix for derived data file
+  namePrefix <- ""
 
-	# set name prefix for derived data file
-	namePrefix = ""
-
-	if (rs@imputeApproximal==TRUE) {
-		namePrefix = paste(namePrefix, '-impute-approximal', sep='')
-	}
-	else if (rs@imputeOther==TRUE) {
-		namePrefix = paste(namePrefix, '-impute-other', sep='')
-	}
+  if (rs@imputeApproximal == TRUE) {
+    namePrefix <- paste(namePrefix, "-impute-approximal", sep = "")
+  } else if (rs@imputeOther == TRUE) {
+    namePrefix <- paste(namePrefix, "-impute-other", sep = "")
+  }
 
 
-	return(namePrefix)
+  return(namePrefix)
 }

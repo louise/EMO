@@ -17,26 +17,22 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each day in alldays, try to impute those that are not already valid
 # Returns a list of updated days
 imputeByDay <- function(alldays, rs) {
+  alldaysImputed <- list()
+  countDays <- 1
 
-	alldaysImputed = list()
-	countDays=1
+  # for each day, impute if possible
+  for (day in alldays) {
+    # only impute if day is not already valid
+    if (day@validday == FALSE) {
+      day <- impute(day, alldays, rs@nightstart, rs@imputeOther)
+    }
 
-	# for each day, impute if possible
-	for (day in alldays) {
+    alldaysImputed[[countDays]] <- day
+    countDays <- countDays + 1
+  }
 
-		# only impute if day is not already valid
-		if (day@validday == FALSE) {
-			day = impute(day, alldays, rs@nightstart, rs@imputeOther)
-		}
-
-		alldaysImputed[[countDays]] = day
-                countDays=countDays+1
-	}
-
-	return(alldaysImputed)
-
+  return(alldaysImputed)
 }

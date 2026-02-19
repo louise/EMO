@@ -1,4 +1,3 @@
-
 # The MIT License (MIT)
 # Copyright (c) 2018 Louise AC Millard, MRC Integrative Epidemiology Unit, University of Bristol
 #
@@ -21,45 +20,40 @@
 ## UNUSED
 
 writeMissingSummaryByDay <- function(alldays, impute, userID, filename, outdir) {
-
-        for (d in alldays) {
-		writeMissingSummary(d, impute, userID, filename, outdir)
-	}
+  for (d in alldays) {
+    writeMissingSummary(d, impute, userID, filename, outdir)
+  }
 }
 
 
 writeMissingSummary <- function(day, impute, userID, filename, outdir) {
+  nt <- day[["nighttime"]]
+  dt <- day[["daytime"]]
 
-        nt = day[["nighttime"]]
-        dt = day[["daytime"]]
+  daySeq <- NULL
 
-	daySeq = NULL
+  # we don't care there is a duplicate time point (in both daytime and nighttime) because the area between them is zero so this is ignored in calculations
+  if (!is.null(dt) & !is.null(nt)) {
+    daySeq <- rbind(nt, dt[2:nrow(dt), ])
+  } else if (!is.null(dt)) {
+    daySeq <- dt
+  } else if (!is.null(nt)) {
+    daySeq <- nt
+  }
 
-        # we don't care there is a duplicate time point (in both daytime and nighttime) because the area between them is zero so this is ignored in calculations
-        if (!is.null(dt) & !is.null(nt) ) {
-                daySeq = rbind(nt,dt[2:nrow(dt),])
-        }
-	else if (!is.null(dt)) {
-               daySeq = dt
-        }
-	else if (!is.null(nt)) {
-                daySeq = nt
-        }
+  proportionComplete <- length(which(!is.na(daySeq$sgReading))) / nrow(daySeq)
+  timediff <- as.numeric(difftime(daySeq$time[nrow(daySeq)], daySeq$time[1], units = "mins"))
 
-        proportionComplete = length(which(!is.na(daySeq$sgReading)))/nrow(daySeq)
-	timediff = as.numeric(difftime(daySeq$time[nrow(daySeq)], daySeq$time[1], units="mins"))
+  numNotNA <- length(which(!is.na(daySeq$sgReading)))
 
-	numNotNA = length(which(!is.na(daySeq$sgReading)))
+  namePrefix <- ""
+  if (!is.null(filename)) {
+    namePrefix <- paste("-", userID, sep = "")
+  }
+  if (impute == TRUE) {
+    namePrefix <- paste(namePrefix, "-imputed", sep = "")
+  }
+  missingfile <- paste(outdir, "/missingSummary", namePrefix, ".csv", sep = "")
 
-namePrefix = ""
-if (!is.null(filename)) {
-        namePrefix = paste('-', userID, sep='')
-}
-if (impute==TRUE) {
-namePrefix = paste(namePrefix, '-imputed', sep='')
-}
-missingfile=paste(outdir,"/missingSummary",namePrefix,".csv", sep="")
-
-        write(paste(userID, day[["validday"]], length(daySeq$sgReading), numNotNA, timediff, day[["daystart"]], day[["dayend"]], proportionComplete, sep=","), file=missingfile, append=TRUE)
-
+  write(paste(userID, day[["validday"]], length(daySeq$sgReading), numNotNA, timediff, day[["daystart"]], day[["dayend"]], proportionComplete, sep = ","), file = missingfile, append = TRUE)
 }

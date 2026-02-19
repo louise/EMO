@@ -17,40 +17,37 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Calculates a proxy measure of fasting SG - average of the 30 minute period with the lowest average.
 # Returns fasting proxy value.
 fastingProxy <- function(raw) {
+  # get only rows with SG readings
+  sgIdx <- which(!is.na(raw$sgReading))
+  raw <- raw[sgIdx, ]
 
-	# get only rows with SG readings
-	sgIdx = which(!is.na(raw$sgReading))
-	raw = raw[sgIdx,]
+  # get position 1-30, for the 30 consecutive values at each idx
+  # each row has columns 1-30 for each index starting at the row (and some NAs if <30 after this index in sequence)
+  raw$noct1 <- raw$sgReading
+  colnames <- c("noct1")
 
-	# get position 1-30, for the 30 consecutive values at each idx
-	# each row has columns 1-30 for each index starting at the row (and some NAs if <30 after this index in sequence)
-	raw$noct1 = raw$sgReading
-	colnames=c("noct1")
+  # create data frame with 30 columns so that each row corresponds to a particular 30 minute block in the night-time
+  for (i in 2:30) {
+    colname <- paste("noct", i, sep = "")
 
-	# create data frame with 30 columns so that each row corresponds to a particular 30 minute block in the night-time
-	for (i in 2:30) {
-		colname=paste("noct",i,sep='')
+    # shift sgReadings up 1 each time
+    colvals <- raw$sgReading[i:nrow(raw)]
+    colvalsna <- rep(NA, i - 1)
+    colvals <- c(colvals, colvalsna)
 
-		# shift sgReadings up 1 each time
-		colvals=raw$sgReading[i:nrow(raw)]
-		colvalsna = rep(NA,i-1)
-		colvals = c(colvals,colvalsna)
+    raw[, colname] <- colvals
+    colnames <- c(colnames, colname)
+  }
 
-		raw[,colname] = colvals
-		colnames=c(colnames, colname)
-	}
+  raw$noctMean <- rowMeans(raw[, colnames])
 
-	raw$noctMean = rowMeans(raw[,colnames])
+  noctNotNA <- raw$noctMean[which(!is.na(raw$noctMean))]
 
-	noctNotNA = raw$noctMean[which(!is.na(raw$noctMean))]
+  # lowest of the 30 consecutive minutes
+  fastProxy <- min(noctNotNA)
 
-	# lowest of the 30 consecutive minutes
-	fastProxy = min(noctNotNA)
-
-	return(fastProxy)
+  return(fastProxy)
 }
-

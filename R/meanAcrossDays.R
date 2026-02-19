@@ -17,28 +17,24 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Data frame df contains 1 row where the columns correspond to derived statistics for a particular day.
 # Extracts all statistics of a particular type.
 # Returns the mean value of these extracted values.
 meanAcrossDays <- function(colName, df) {
+  thisData <- df[, grepl(colName, colnames(df))]
 
-	thisData = df[ ,grepl(colName, colnames(df))]
+  # no events for any days so don't calculate the average
+  if (length(which(is.na(df))) == ncol(df)) {
+    return(NA)
+  } else {
+    # convert to vector without NAs
+    comb <- as.vector(unlist(thisData))
+    comb <- na.omit(comb)
 
-	# no events for any days so don't calculate the average
-	if (length(which(is.na(df))) == ncol(df) ) {
-		return(NA)
-	}
-	else {
+    if (length(comb) == 0) {
+      return(NA)
+    }
 
-		# convert to vector without NAs
-		comb = as.vector(unlist(thisData))
-		comb = na.omit(comb)
-
-		if (length(comb) == 0 ) {
-			return(NA)
-		}
-
-		return(mean(comb))
-	}
+    return(mean(comb))
+  }
 }

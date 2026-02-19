@@ -22,22 +22,17 @@
 #' @param opt List containing command line arguments.
 #' @export
 runGLU <- function(opt) {
+  # if user specifies a filename then process this, otherwise process all other files in indir
+  if (!is.null(opt$filename)) {
+    fullfilename <- paste0(opt$indir, opt$filename)
 
-# if user specifies a filename then process this, otherwise process all other files in indir
-if (!is.null(opt$filename)) {
+    if (!file.exists(fullfilename)) {
+      stop(paste0("File ", fullfilename, " does not exist"))
+    }
+    files <- c(opt$filename)
+  } else {
+    files <- list.files(opt$indir, pattern = ".*\\..*", full.names = FALSE)
+  }
 
-	fullfilename=paste0(opt$indir, opt$filename)
-
-	if (!file.exists(fullfilename)) {
-		stop(paste0('File ', fullfilename, ' does not exist'))
-	}
-	files=c(opt$filename)
-
-} else {
-	files = list.files(opt$indir, pattern=".*\\..*", full.names=FALSE)
+  runGLUForFiles(files = files, indir = opt$indir, outdir = opt$outdir, device = opt$device, daystart = opt$daystart, nightstart = opt$nightstart, dayPeriodStartTime = opt$dayPeriodStartTime, timeformat = opt$timeformat, imputeApproximal = opt$impute_approximal, imputeOther = opt$impute_other, freq = opt$freq, outlierthreshold = opt$outlierthreshold, hypothreshold = opt$hypothreshold, hyperthreshold = opt$hyperthreshold, save = opt$save, saveevents = opt$saveevents, pregnancy = opt$pregnancy, diabetes = opt$diabetes)
 }
-
-runGLUForFiles(files=files, indir=opt$indir, outdir=opt$outdir, device=opt$device, daystart=opt$daystart, nightstart=opt$nightstart, dayPeriodStartTime=opt$dayPeriodStartTime, timeformat=opt$timeformat, imputeApproximal=opt$impute_approximal, imputeOther=opt$impute_other, freq=opt$freq, outlierthreshold=opt$outlierthreshold, hypothreshold=opt$hypothreshold, hyperthreshold=opt$hyperthreshold, save=opt$save, saveevents=opt$saveevents, pregnancy=opt$pregnancy, diabetes=opt$diabetes)
-
-}
-

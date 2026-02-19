@@ -17,47 +17,42 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Calculate standardised glycemic variability percentage (sGVP) of SG readings in raw.
 # Returns the sGVP value.
 SGVP <- function(data, stdx) {
+  if (stdx == TRUE) {
+    # standardise sequence (x - median)/MAD
+    # MAD function rescales so MAD=SD if normally distributed
+    madsg <- mad(data$sgReading, constant = 1, na.rm = TRUE)
 
-	if (stdx==TRUE) {
-		# standardise sequence (x - median)/MAD
-		# MAD function rescales so MAD=SD if normally distributed
-		madsg = mad(data$sgReading, constant=1, na.rm=TRUE)
-		
-		mediansg = median(data$sgReading)
-		data$sgReading = (data$sgReading - mediansg)/madsg
-	}
+    mediansg <- median(data$sgReading)
+    data$sgReading <- (data$sgReading - mediansg) / madsg
+  }
 
 
-	# for consecutive pair of measurements calculate the GVP for this part
-	sgvp = 0
-	overallTimeDiffMins = 0
+  # for consecutive pair of measurements calculate the GVP for this part
+  sgvp <- 0
+  overallTimeDiffMins <- 0
 
-	for (idx in 2:nrow(data)) {
+  for (idx in 2:nrow(data)) {
+    # don't include variation between non-imputed and imputed regions, and left and right parts of imputed regions
+    if (data$impute[idx] == data$impute[idx - 1]) {
+      timeDiffMins <- as.numeric(difftime(data$time[idx], data$time[idx - 1], units = "mins"))
 
-		# don't include variation between non-imputed and imputed regions, and left and right parts of imputed regions
-		if (data$impute[idx] == data$impute[idx-1]) {
+      # sometimes a day might have two night/day segments if the start of the day period isn't exactly on the day-night or night-day boundary
+      if (timeDiffMins == 1) {
+        sgvpThis <- sqrt((data$sgReading[idx - 1] - data$sgReading[idx])^2 + timeDiffMins^2)
+        sgvp <- sgvp + sgvpThis
 
-			timeDiffMins = as.numeric(difftime(data$time[idx], data$time[idx-1], units="mins"))
-			
-			# sometimes a day might have two night/day segments if the start of the day period isn't exactly on the day-night or night-day boundary
-			if (timeDiffMins == 1) {
-				sgvpThis = sqrt((data$sgReading[idx-1] - data$sgReading[idx])^2 + timeDiffMins^2)
-				sgvp = sgvp + sgvpThis
-	
-				# need to add here as if imputed segment then it is skipped
-				overallTimeDiffMins = overallTimeDiffMins + timeDiffMins
-			}
-		}
-	}
-	sgvp = sgvp/overallTimeDiffMins
+        # need to add here as if imputed segment then it is skipped
+        overallTimeDiffMins <- overallTimeDiffMins + timeDiffMins
+      }
+    }
+  }
+  sgvp <- sgvp / overallTimeDiffMins
 
-	# rescaling so it's a % of the minimum length of the line
-	sgvp = (sgvp - 1) * 100
+  # rescaling so it's a % of the minimum length of the line
+  sgvp <- (sgvp - 1) * 100
 
-	return(sgvp)
-
+  return(sgvp)
 }

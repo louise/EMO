@@ -37,156 +37,146 @@
 #' @param pregnancy Logical. If TRUE then data is for pregnancy study, so pregnancy specific statistics should be derived.
 #' @param diabetes Logical. If TRUE then data is for diabetes study, so pregnancy specific statistics should be derived.
 #' @export
-runGLUForFiles <- function(files, indir, outdir=NULL, device=0, daystart='06:30', nightstart='23:00', dayPeriodStartTime=NULL, firstvalid=FALSE, timeformat='%d/%m/%y %H:%M:%S', imputeApproximal=FALSE, imputeOther=FALSE, freq=5, outlierthreshold=5, hypothreshold=NULL, hyperthreshold=NULL, save=FALSE, saveevents=FALSE, pregnancy=FALSE, diabetes=FALSE, epochfrequency=5, mgdl=FALSE) {
+runGLUForFiles <- function(files, indir, outdir = NULL, device = 0, daystart = "06:30", nightstart = "23:00", dayPeriodStartTime = NULL, firstvalid = FALSE, timeformat = "%d/%m/%y %H:%M:%S", imputeApproximal = FALSE, imputeOther = FALSE, freq = 5, outlierthreshold = 5, hypothreshold = NULL, hyperthreshold = NULL, save = FALSE, saveevents = FALSE, pregnancy = FALSE, diabetes = FALSE, epochfrequency = 5, mgdl = FALSE) {
+  print("Running GLU...")
+  print(paste0("GLU package version: ", packageVersion("GLU")))
 
 
-print('Running GLU...')
-print(paste0('GLU package version: ', packageVersion("GLU")))
+  # run settings
+  rs <- validateOptions(indir, outdir, device, daystart = daystart, nightstart = nightstart, dayPeriodStartTime = dayPeriodStartTime, firstvalid = firstvalid, timeformat = timeformat, imputeApproximal = imputeApproximal, imputeOther = imputeOther, freq = freq, outlierthreshold = outlierthreshold, hypothreshold = hypothreshold, hyperthreshold = hyperthreshold, save = save, saveevents = saveevents, pregnancy = pregnancy, diabetes = diabetes, mgdl = mgdl)
 
 
+  # Save run settings for reporting in publications
+  saveRunSettings(rs)
 
-# run settings
-rs = validateOptions(indir, outdir, device, daystart=daystart, nightstart=nightstart, dayPeriodStartTime=dayPeriodStartTime, firstvalid=firstvalid, timeformat=timeformat, imputeApproximal=imputeApproximal, imputeOther=imputeOther, freq=freq, outlierthreshold=outlierthreshold, hypothreshold=hypothreshold, hyperthreshold=hyperthreshold, save=save, saveevents=saveevents, pregnancy=pregnancy, diabetes=diabetes, mgdl=mgdl)
-
-
-# Save run settings for reporting in publications
-saveRunSettings(rs)
-
-namePrefix = derivedFilePrefix(rs)
+  namePrefix <- derivedFilePrefix(rs)
 
 
-# refresh impute logging file
-if (rs@imputeApproximal == TRUE | rs@imputeOther == TRUE) {
-        sink(paste0(outdir, '/logging-impute.txt'))
-        sink()
-}
+  # refresh impute logging file
+  if (rs@imputeApproximal == TRUE | rs@imputeOther == TRUE) {
+    sink(paste0(outdir, "/logging-impute.txt"))
+    sink()
+  }
 
 
+  first <- TRUE
 
-first=TRUE
+  # process CGM file (data for one participant) and add row with derived variables to summaryVariables data frame
+  for (f in files) {
+    print("---------")
+    print(paste("File name:", f))
 
-# process CGM file (data for one participant) and add row with derived variables to summaryVariables data frame
-for (f in files) {
-
-	print("---------")
-	print(paste("File name:", f))
-
-	# get userID
-        userID <<- getUserIDFromFileName(f)
-        userIDdf = c(userID)
-        userIDdf = rbind(userIDdf)
-        colnames(userIDdf) = c("ID")
+    # get userID
+    userID <<- getUserIDFromFileName(f)
+    userIDdf <- c(userID)
+    userIDdf <- rbind(userIDdf)
+    colnames(userIDdf) <- c("ID")
 
 
-	######
-	###### convert file format depending on device type
+    ######
+    ###### convert file format depending on device type
 
-	convertFileFormat(f, rs)
+    convertFileFormat(f, rs)
 
-	#####
-	##### load data
+    #####
+    ##### load data
 
-	raw <- loadData(f, userID, rs)
+    raw <- loadData(f, userID, rs)
 
-	if (nrow(raw[["sg"]]) == 0) {
-		print("No SG readings")
-		next
-	}
-
-
-	######
-	###### QC
-
-	# get a list of days
-	participantData = getDays(raw, rs)
-
-	if (rs@imputeApproximal == TRUE | rs@imputeOther == TRUE) {
-		print('imputing missing timepoints ...')
-		
-		sink(paste0(outdir, '/logging-impute.txt'), append=TRUE)
-		print(paste0('*********** IMPUTING ', userID, ' ***********'))
-		participantData@days = imputeByDay(participantData@days, rs)
-		sink()
-	}
-
-	validDays = getValidDays(participantData)
-
-	# number of valid days is size of list
-	numValidDays = c(length(validDays)) # for adding to results data frame
-
-	if (numValidDays == 0) {
-		print(paste("No valid days for userID:", userID))
-		next
-	}
-	
-	print(paste0("Number of valid days: ", numValidDays))
-
-	# mark invalid deviations per day
-        validDays = markLargeDeviationsByDay(validDays, rs@outlierthreshold)
-
-	# num invalid deviations per day
-        deviationsInvalid = invalidDeviationsByDay(validDays)
-
-	print(paste('Invalid deviations?', deviationsInvalid[1,1]))
-
-	#  save validDays to a CSV files
-	saveCleanData(validDays, userID, rs)
+    if (nrow(raw[["sg"]]) == 0) {
+      print("No SG readings")
+      next
+    }
 
 
-	######
-	###### PLOTTING
+    ######
+    ###### QC
 
-	plotCGM(validDays, outdir, userID, rs)
+    # get a list of days
+    participantData <- getDays(raw, rs)
 
+    if (rs@imputeApproximal == TRUE | rs@imputeOther == TRUE) {
+      print("imputing missing timepoints ...")
 
-	######
-	###### GENERATE VARIABLES
+      sink(paste0(outdir, "/logging-impute.txt"), append = TRUE)
+      print(paste0("*********** IMPUTING ", userID, " ***********"))
+      participantData@days <- imputeByDay(participantData@days, rs)
+      sink()
+    }
 
-	print(paste("Generating variables for file:", f,", with user ID:", userID))
-	summThis = deriveCharacteristics(validDays, userIDdf, rs)
+    validDays <- getValidDays(participantData)
 
+    # number of valid days is size of list
+    numValidDays <- c(length(validDays)) # for adding to results data frame
 
-	# add correlation and invalid deviations
-	summThis = cbind.data.frame(summThis, deviationsInvalid)
+    if (numValidDays == 0) {
+      print(paste("No valid days for userID:", userID))
+      next
+    }
 
-	# add to summaryVar data frame, or create if first person
-        if (first==TRUE) {
-                summaryVariables = summThis
-                first=FALSE
-        }
-	else {
-		# we use merge rather than rbind because users have different columns depending on how many valid days they have
-                summaryVariables = merge(summaryVariables,summThis, all=TRUE)
-        }
+    print(paste0("Number of valid days: ", numValidDays))
 
-	print("---------")
-}
+    # mark invalid deviations per day
+    validDays <- markLargeDeviationsByDay(validDays, rs@outlierthreshold)
 
+    # num invalid deviations per day
+    deviationsInvalid <- invalidDeviationsByDay(validDays)
 
-# if there are no files then we have no derived characteristics to save
-if (exists("summaryVariables")==TRUE) {
+    print(paste("Invalid deviations?", deviationsInvalid[1, 1]))
 
-	print("Saving results to file ...")
-
-	# overall summaries
-	summaryVariablesBrief = summaryVariables[,c("ID", "numValidDays", "meanmadPerDay", "meanProportionLowPerDay", "meanProportionNormalPerDay", "meanProportionHighPerDay", "meanAUCperDay", "meanSGVPPerDay", "meanFastingProxyPerDay", "hasInvalidDeviations")]
-	write.table(summaryVariablesBrief, file=paste(outdir, "/", "cgmSummary", namePrefix, ".csv",sep=""), sep=",", quote=FALSE, row.names=FALSE)
-
-	# verbose version with summaries per day
-	write.table(summaryVariables, file=paste(outdir, "/", "cgmSummaryVerbose", namePrefix, ".csv",sep=""), sep=",", quote=FALSE, row.names=FALSE)
+    #  save validDays to a CSV files
+    saveCleanData(validDays, userID, rs)
 
 
-} else {
-	print("No results were generated")
-}
+    ######
+    ###### PLOTTING
 
-# warnings
-wx = warnings()
-if (!is.null(wx)) {
-	print('Warnings:')
-	print(wx)
-}
+    plotCGM(validDays, outdir, userID, rs)
 
-print('GLU has finished.')
 
+    ######
+    ###### GENERATE VARIABLES
+
+    print(paste("Generating variables for file:", f, ", with user ID:", userID))
+    summThis <- deriveCharacteristics(validDays, userIDdf, rs)
+
+
+    # add correlation and invalid deviations
+    summThis <- cbind.data.frame(summThis, deviationsInvalid)
+
+    # add to summaryVar data frame, or create if first person
+    if (first == TRUE) {
+      summaryVariables <- summThis
+      first <- FALSE
+    } else {
+      # we use merge rather than rbind because users have different columns depending on how many valid days they have
+      summaryVariables <- merge(summaryVariables, summThis, all = TRUE)
+    }
+
+    print("---------")
+  }
+
+
+  # if there are no files then we have no derived characteristics to save
+  if (exists("summaryVariables") == TRUE) {
+    print("Saving results to file ...")
+
+    # overall summaries
+    summaryVariablesBrief <- summaryVariables[, c("ID", "numValidDays", "meanmadPerDay", "meanProportionLowPerDay", "meanProportionNormalPerDay", "meanProportionHighPerDay", "meanAUCperDay", "meanSGVPPerDay", "meanFastingProxyPerDay", "hasInvalidDeviations")]
+    write.table(summaryVariablesBrief, file = paste(outdir, "/", "cgmSummary", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE)
+
+    # verbose version with summaries per day
+    write.table(summaryVariables, file = paste(outdir, "/", "cgmSummaryVerbose", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE)
+  } else {
+    print("No results were generated")
+  }
+
+  # warnings
+  wx <- warnings()
+  if (!is.null(wx)) {
+    print("Warnings:")
+    print(wx)
+  }
+
+  print("GLU has finished.")
 }

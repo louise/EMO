@@ -17,40 +17,35 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Calculate AUC using trapezoid method.
 # Returns AUC value for sequence raw.
 auc <- function(raw) {
+  # get only rows with SG readings
+  sgIdx <- which(!is.na(raw$sgReading))
+  data <- raw[sgIdx, ]
 
-	# get only rows with SG readings
-	sgIdx = which(!is.na(raw$sgReading))
-	data = raw[sgIdx,]
+  # total time period of SG data in raw
+  timeLengthPeriod <- 0
 
-	# total time period of SG data in raw
-	timeLengthPeriod = 0
+  # for each timepoint, add auc between this timepoint and the previous timepoint
+  aucValue <- 0
 
-	# for each timepoint, add auc between this timepoint and the previous timepoint
-	aucValue = 0
+  if (nrow(data) > 1) {
+    for (idx in 2:nrow(data)) {
+      timeDiffMins <- as.numeric(difftime(data$time[idx], data$time[idx - 1], units = "mins"))
 
-	if (nrow(data)>1) {
-		for (idx in 2:nrow(data)) {
-			timeDiffMins = as.numeric(difftime(data$time[idx], data$time[idx-1], units="mins"))
+      # only include if timepoint are 1 minute apart
+      if (timeDiffMins == 1) {
+        trapezoid <- (data$sgReading[idx] + data$sgReading[idx - 1]) * timeDiffMins * 0.5
+        aucValue <- aucValue + trapezoid
 
-			# only include if timepoint are 1 minute apart
-			if (timeDiffMins == 1) {
+        timeLengthPeriod <- timeLengthPeriod + timeDiffMins
+      }
+    }
+  }
 
-				trapezoid = (data$sgReading[idx] + data$sgReading[idx-1]) * timeDiffMins * 0.5
-				aucValue = aucValue + trapezoid
+  # convert to auc per minute
+  aucValue <- aucValue / timeLengthPeriod
 
-				timeLengthPeriod = timeLengthPeriod + timeDiffMins
-
-			}
-		}
-	}
-
-	# convert to auc per minute
-	aucValue = aucValue/timeLengthPeriod
-
-	return(aucValue)
+  return(aucValue)
 }
-

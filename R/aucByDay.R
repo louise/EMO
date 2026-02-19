@@ -17,50 +17,46 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, generate the auc
 # Returns a data frame - the auc values of each day, and the average across all days overall.
 aucByDay <- function(validDays) {
+  aucs <- c()
 
-	aucs = c()
+  # column names for each auc value we generate
+  cnames <- c()
 
-	# column names for each auc value we generate	
-	cnames = c()
+  count <- 1
 
-	count=1
+  # for each valid day, calculate the auc
+  for (vd in validDays) {
+    # sequence of timepoints for this day
 
-	# for each valid day, calculate the auc
-	for (vd in validDays) {
-		
-		# sequence of timepoints for this day
+    # auc of this day only
+    aucVD <- auc(getDayGlucoseValues(vd, interp = TRUE))
 
-		# auc of this day only
-		aucVD = auc(getDayGlucoseValues(vd, interp=TRUE))
+    # nighttime, daytime aucs
+    aucVDn <- auc(getDayGlucoseValues(vd, night = TRUE, interp = TRUE))
+    aucVDd <- auc(getDayGlucoseValues(vd, day = TRUE, interp = TRUE))
 
-		# nighttime, daytime aucs
-		aucVDn = auc(getDayGlucoseValues(vd, night=TRUE, interp=TRUE))
-		aucVDd = auc(getDayGlucoseValues(vd, day=TRUE, interp=TRUE))
+    aucs <- append(aucs, c(aucVD, aucVDn, aucVDd))
+    cnames <- append(cnames, c(paste("auc_day", count, sep = ""), paste("auc_nt_day", count, sep = ""), paste("auc_dt_day", count, sep = "")))
 
-		aucs = append(aucs, c(aucVD, aucVDn, aucVDd))
-		cnames = append(cnames, c(paste("auc_day", count, sep=""), paste("auc_nt_day", count, sep=""), paste("auc_dt_day", count, sep="")))
+    count <- count + 1
+  }
 
-                count=count+1
-	}
+  # set column names for auc values
+  res <- rbind(aucs)
+  colnames(res) <- cnames
 
-	# set column names for auc values
-	res = rbind(aucs)
-	colnames(res) = cnames
+  aucAv <- meanAcrossDays("auc_day", res)
+  aucAvN <- meanAcrossDays("auc_nt_day", res)
+  aucAvD <- meanAcrossDays("auc_dt_day", res)
 
-	aucAv = meanAcrossDays("auc_day", res)
-	aucAvN = meanAcrossDays("auc_nt_day", res)
-	aucAvD = meanAcrossDays("auc_dt_day", res)
+  othervars <- c(aucAv, aucAvN, aucAvD)
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("meanAUCperDay", "meanAUCperDay_nt", "meanAUCperDay_dt")
 
-	othervars = c(aucAv, aucAvN, aucAvD)
-  	othervars = rbind(othervars)
-	colnames(othervars) = c("meanAUCperDay", "meanAUCperDay_nt", "meanAUCperDay_dt")
+  res <- cbind(res, othervars)
 
-	res = cbind(res, othervars)
-
-	return(res)
-
+  return(res)
 }

@@ -17,43 +17,39 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, derive the SGVP
 # Returns the SGVP for each day, and the average across all days overall.
 SGVPByDay <- function(validDays) {
+  sgvps <- c()
 
-	sgvps = c()	
+  cnames <- c()
+  count <- 1
+  for (vd in validDays) {
+    # SGVP of this valid day only
+    sgvpVD <- SGVP(getDayGlucoseValues(vd, interp = TRUE), TRUE)
 
-	cnames=c()
-	count=1
-	for (vd in validDays) {
+    # nighttime, daytime SGVP
+    sgvpVDn <- SGVP(getDayGlucoseValues(vd, night = TRUE, interp = TRUE), TRUE)
+    sgvpVDd <- SGVP(getDayGlucoseValues(vd, day = TRUE, interp = TRUE), TRUE)
 
-		# SGVP of this valid day only
-		sgvpVD = SGVP(getDayGlucoseValues(vd, interp=TRUE), TRUE)
+    sgvps <- append(sgvps, c(sgvpVD, sgvpVDn, sgvpVDd))
 
-		# nighttime, daytime SGVP
-		sgvpVDn = SGVP(getDayGlucoseValues(vd, night=TRUE, interp=TRUE), TRUE)
-		sgvpVDd = SGVP(getDayGlucoseValues(vd, day=TRUE, interp=TRUE), TRUE)
+    cnames <- append(cnames, c(paste("SGVP_day", count, sep = ""), paste("SGVP_nt_day", count, sep = ""), paste("SGVP_dt_day", count, sep = "")))
 
-		sgvps = append(sgvps, c(sgvpVD, sgvpVDn, sgvpVDd))
+    count <- count + 1
+  }
 
-		cnames = append(cnames, c(paste("SGVP_day", count, sep=""), paste("SGVP_nt_day", count, sep=""), paste("SGVP_dt_day", count, sep="")))
+  res <- rbind(sgvps)
+  colnames(res) <- cnames
 
-                count=count+1
-	}
+  sgvpAv <- meanAcrossDays("SGVP_day", res)
+  sgvpAvN <- meanAcrossDays("SGVP_nt_day", res)
+  sgvpAvD <- meanAcrossDays("SGVP_dt_day", res)
 
-	res = rbind(sgvps)
-        colnames(res) = cnames
+  othervars <- c(sgvpAv, sgvpAvN, sgvpAvD)
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("meanSGVPPerDay", "meanSGVPPerDay_nt", "meanSGVPPerDay_dt")
+  res <- cbind(res, othervars)
 
-	sgvpAv = meanAcrossDays("SGVP_day", res)
-	sgvpAvN = meanAcrossDays("SGVP_nt_day", res)
-	sgvpAvD = meanAcrossDays("SGVP_dt_day", res)
-
-	othervars = c(sgvpAv, sgvpAvN, sgvpAvD)
-  	othervars = rbind(othervars)
-	colnames(othervars) = c("meanSGVPPerDay", "meanSGVPPerDay_nt","meanSGVPPerDay_dt")
-	res = cbind(res, othervars)
-
-	return(res)
-
+  return(res)
 }

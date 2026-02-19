@@ -17,54 +17,51 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Derives variables that describe characteristics of the SG sequence.
 # Returns a data frame containing these characteristics values.
 deriveCharacteristics <- function(validDays, userIDdf, rs) {
+  print("MAD")
+  # Median absolute deviation for each day
+  madx <- madByDay(validDays)
 
-	print('MAD')
-	# Median absolute deviation for each day
-	madx = madByDay(validDays)
+  # num peaks - this was just to check if the number of undulations decreases as mad increases
+  # 	nps = numPeaksByDay(validDays)
 
-	# num peaks - this was just to check if the number of undulations decreases as mad increases
-#	nps = numPeaksByDay(validDays)
+  print("AUC")
+  # AUC, on each complete day
+  aucValues <- aucByDay(validDays)
 
-	print('AUC')
-        # AUC, on each complete day
-        aucValues = aucByDay(validDays)
+  print("Time proportions")
+  # Proportion of time spent in low, medium and high glucose ranges, on each complete day
+  proportions <- timeProportionsByDay(validDays, rs@hypothreshold, rs@hyperthreshold)
 
-	print('Time proportions')
-        # Proportion of time spent in low, medium and high glucose ranges, on each complete day
-        proportions = timeProportionsByDay(validDays, rs@hypothreshold, rs@hyperthreshold)
+  print("sGVP")
+  # SGVP, on each complete day
+  lability <- SGVPByDay(validDays)
 
-	print('sGVP')
-        # SGVP, on each complete day
-        lability = SGVPByDay(validDays)
-
-	print('Fasting proxy')
-        # fasting glucose levels
-        fastingProxy = fastingProxyByDay(validDays)
-
-
-	## add number of valid days to derived statistics
-        othervars = c(length(validDays))
-        othervars = rbind(othervars)
-	colnames(othervars) = c("numValidDays")
+  print("Fasting proxy")
+  # fasting glucose levels
+  fastingProxy <- fastingProxyByDay(validDays)
 
 
-	print('Events')
-        # meal time statistics
-        eventValues = eventStatisticsByDay(validDays, rs, userIDdf)
+  ## add number of valid days to derived statistics
+  othervars <- c(length(validDays))
+  othervars <- rbind(othervars)
+  colnames(othervars) <- c("numValidDays")
 
-	dates = datesByDay(validDays)
 
-        # whole result row for this participant
-	summThis = cbind.data.frame(userIDdf, madx, aucValues, proportions, lability, fastingProxy, othervars, dates)
+  print("Events")
+  # meal time statistics
+  eventValues <- eventStatisticsByDay(validDays, rs, userIDdf)
 
-	if (!is.null(eventValues)) {
-		summThis = cbind.data.frame(summThis, eventValues)
-	}
+  dates <- datesByDay(validDays)
 
-	return(summThis)
+  # whole result row for this participant
+  summThis <- cbind.data.frame(userIDdf, madx, aucValues, proportions, lability, fastingProxy, othervars, dates)
 
+  if (!is.null(eventValues)) {
+    summThis <- cbind.data.frame(summThis, eventValues)
+  }
+
+  return(summThis)
 }

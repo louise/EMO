@@ -20,68 +20,72 @@
 # called when day is created
 # ensures day has 1441 glucose values (1 per minute plus the last minute of the next day for interpolation)
 check_day <- function(object) {
-	errors <- character()
+  errors <- character()
 
-	length_glucose <- nrow(object@glucose)
+  length_glucose <- nrow(object@glucose)
 
-	if (length_glucose != 1441) {
-		msg <- paste("Glucose is length ", length_glucose, ".  Should be 1441", sep = "")
-		errors <- c(errors, msg)
-	}
+  if (length_glucose != 1441) {
+    msg <- paste("Glucose is length ", length_glucose, ".  Should be 1441", sep = "")
+    errors <- c(errors, msg)
+  }
 
-	if (length(errors) == 0) TRUE else errors
-
+  if (length(errors) == 0) TRUE else errors
 }
 
 
-setClass("day", 
-	slots = c(glucose = "data.frame",
-			dayidx = "numeric",
-			validday = "logical",
-			events = "data.frame",
-			bg = "data.frame")
-	,validity = check_day
+setClass("day",
+  slots = c(
+    glucose = "data.frame",
+    dayidx = "numeric",
+    validday = "logical",
+    events = "data.frame",
+    bg = "data.frame"
+  ),
+  validity = check_day
 )
-
-
 
 
 setClass("participantData",
-	slots = c(nightstart = "POSIXlt",
-			daystart = "POSIXlt",
-			dayfirst = "logical",
-			days = "list",
-			numvaliddays = "numeric")
+  slots = c(
+    nightstart = "POSIXlt",
+    daystart = "POSIXlt",
+    dayfirst = "logical",
+    days = "list",
+    numvaliddays = "numeric"
+  )
 )
 
 setClass("event",
-	slots = c(events = "data.frame",
-			meantimetopeak = "numeric",
-			meanpp1 = "numeric",
-			meanpp2 = "numeric")
+  slots = c(
+    events = "data.frame",
+    meantimetopeak = "numeric",
+    meanpp1 = "numeric",
+    meanpp2 = "numeric"
+  )
 )
 
 
-
 setClass("runSettings",
-	slots = c(indir = "character",
-		outdir = "character", 
-		device = "numeric",
-		daystart = "POSIXlt",
-		nightstart = "POSIXlt",
-		dayPeriodStartTime = "POSIXlt",
-		firstvalid = "logical",
-		timeformat = "character",
-		imputeApproximal = "logical", 
-		imputeOther = "logical", 
-		freq = "numeric",
-		outlierthreshold = "numeric",
-		hypothreshold = "numeric",
-		hyperthreshold = "numeric",
-		save = "logical",
-		saveevents = "logical",
-		pregnancy = "logical",
-		diabetes = "logical",
-		epochfrequency = "numeric",
-		mgdl = "logical")
+  slots = c(
+    indir = "character",
+    outdir = "character",
+    device = "numeric",
+    daystart = "POSIXlt",
+    nightstart = "POSIXlt",
+    dayPeriodStartTime = "POSIXlt",
+    firstvalid = "logical",
+    timeformat = "character",
+    imputeApproximal = "logical",
+    imputeOther = "logical",
+    freq = "numeric",
+    outlierthreshold = "numeric",
+    hypothreshold = "numeric",
+    hyperthreshold = "numeric",
+    save = "logical",
+    saveevents = "logical",
+    pregnancy = "logical",
+    diabetes = "logical",
+    epochfrequency = "numeric",
+    mgdl = "logical"
+  )
 )

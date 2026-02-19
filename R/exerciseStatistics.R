@@ -17,42 +17,37 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Derive post-exercise 1hr and 2hr SG levels - the average of the SG readings in the 15 minute period 1 and 2 hrs after each exercise event, respectively.
 # Returns the average of these statistics per day, and across all days overall.
 exerciseStatistics <- function(events, raw) {
+  # get rows indexes with exercise events
+  idxEx <- which(events$event == "EXERCISE")
 
-        # get rows indexes with exercise events
-	idxEx = which(events$event == "EXERCISE")
+  ex <- data.frame(time = c(), time_to_peak = c(), postprand_1hr = c(), postprand_2hr = c())
 
-	ex = data.frame(time=c(), time_to_peak=c(), postprand_1hr=c(), postprand_2hr=c())
+  if (length(idxEx) == 0) {
+    print("No exercise")
+    return(methods::new("event", events = ex, meantimetopeak = NA_real_, meanpp1 = NA_real_, meanpp2 = NA_real_))
+  }
 
-	if (length(idxEx)==0) {
-		print("No exercise")
-		return(methods::new("event", events = ex, meantimetopeak = NA_real_, meanpp1 = NA_real_, meanpp2 = NA_real_))
-	}
+  if (length(idxEx) > 0) {
+    for (i in 1:length(idxEx)) {
+      idxThisEx <- idxEx[i]
 
-	if (length(idxEx)>0) {
-	for (i in 1:length(idxEx)) {
+      # 1-hr and 2-hr postprandial glucose
+      pp1 <- postprandial(raw, events$time[idxThisEx], 1)
+      pp2 <- postprandial(raw, events$time[idxThisEx], 2)
 
-		idxThisEx = idxEx[i]
-		
-		# 1-hr and 2-hr postprandial glucose
-		pp1 = postprandial(raw,	events$time[idxThisEx], 1)
-		pp2 = postprandial(raw, events$time[idxThisEx], 2)	
+      ex_sum <- data.frame(time = events$time[idxThisEx], time_to_peak = NA_real_, postprand_1hr = pp1, postprand_2hr = pp2)
+      ex <- rbind(ex, ex_sum)
+    }
+  }
 
-		ex_sum = data.frame(time=events$time[idxThisEx], time_to_peak = NA_real_, postprand_1hr=pp1, postprand_2hr=pp2)
-		ex = rbind(ex, ex_sum)
-	}
-	}
+  # average values
+  pp1sMean <- mean(ex$postprand_1hr, na.rm = TRUE)
+  pp2sMean <- mean(ex$postprand_2hr, na.rm = TRUE)
 
-	# average values
-	pp1sMean = mean(ex$postprand_1hr, na.rm=TRUE)
-	pp2sMean = mean(ex$postprand_2hr, na.rm=TRUE)
+  events <- methods::new("event", events = ex, meantimetopeak = NA_real_, meanpp1 = pp1sMean, meanpp2 = pp2sMean)
 
-	events = methods::new("event", events = ex, meantimetopeak = NA_real_, meanpp1 = pp1sMean, meanpp2 = pp2sMean)
-
-        return(events)
-
+  return(events)
 }
-

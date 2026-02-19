@@ -17,29 +17,23 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each day mark large deviations
-markLargeDeviationsByDay <- function(days, outlierthreshold=5) {
+markLargeDeviationsByDay <- function(days, outlierthreshold = 5) {
+  alldaysMarked <- list()
+  countDays <- 1
 
+  # for each day, mark large deviations
+  for (vd in days) {
+    raw <- vd@glucose
+    raw <- markLargeDeviations(raw, outlierthreshold)
 
-	alldaysMarked = list()
-	countDays=1
+    # check number of minutes in night and day is still correct and update vd
+    stopifnot(nrow(raw) == nrow(vd@glucose))
+    vd@glucose <- raw
 
-	# for each day, mark large deviations
-	for (vd in days) {
+    alldaysMarked[[countDays]] <- vd
+    countDays <- countDays + 1
+  }
 
-		raw = vd@glucose
-		raw = markLargeDeviations(raw, outlierthreshold)
-
-		# check number of minutes in night and day is still correct and update vd
-		stopifnot(nrow(raw) == nrow(vd@glucose))
-		vd@glucose = raw
-
-		alldaysMarked[[countDays]] = vd
-                countDays=countDays+1
-
-	}
-
-	return(alldaysMarked)
-
+  return(alldaysMarked)
 }

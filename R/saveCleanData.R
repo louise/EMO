@@ -17,45 +17,36 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Saves cleaned CGM data to file.
 # This includes the interpolated timepoints that mark the precise start and end of each day
 saveCleanData <- function(validDays, userID, rs) {
+  if (rs@save == TRUE) {
+    print("Saving clean data ...")
 
-	if (rs@save == TRUE) {
+    first <- TRUE
 
-	print("Saving clean data ...")
+    if (length(validDays) >= 1) {
+      for (vd in validDays) {
+        vday <- vd@glucose
 
-	first = TRUE
-
-	if (length(validDays)>=1) {
-		for (vd in validDays) {
-
-			vday = vd@glucose
-
-			if (first == TRUE) {
-				rawValid = vday
-				first = FALSE
-			}
-			else {
-				rawValid = rbind(rawValid, vday)
-			}
-		
-		}
-	}
-
-	namePrefix = userID
-	if (rs@imputeApproximal==TRUE) {
-                namePrefix = paste(namePrefix, '-impute-approximal', sep='')
+        if (first == TRUE) {
+          rawValid <- vday
+          first <- FALSE
+        } else {
+          rawValid <- rbind(rawValid, vday)
         }
-	else if (rs@imputeOther==TRUE) {
-                namePrefix = paste(namePrefix, '-impute-other', sep='')
-        }
+      }
+    }
+
+    namePrefix <- userID
+    if (rs@imputeApproximal == TRUE) {
+      namePrefix <- paste(namePrefix, "-impute-approximal", sep = "")
+    } else if (rs@imputeOther == TRUE) {
+      namePrefix <- paste(namePrefix, "-impute-other", sep = "")
+    }
 
 
-        # save clean data
-        write.table(rawValid, file=paste(rs@outdir, "/validdays/cgmValidDays", namePrefix, ".csv",sep=""), sep=",", quote=FALSE, row.names=FALSE, na="")
-
-	}
-
+    # save clean data
+    write.table(rawValid, file = paste(rs@outdir, "/validdays/cgmValidDays", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE, na = "")
+  }
 }

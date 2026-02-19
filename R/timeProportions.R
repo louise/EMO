@@ -17,38 +17,35 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Calculate proportion of time in low, normal and high glucose levels, using linear interpolation between measurements.
 # The thresholds used are different depending if the study is of the general population or during pregnancy or for diabetics.
 # Returns a data frame with the time proportions for low, normal and high, for sequence raw.
 timeProportions <- function(data, lowT, highT) {
+  # init time spent in each range
+  lowTime <- 0
+  normTime <- 0
+  highTime <- 0
 
-	# init time spent in each range
-	lowTime = 0
-	normTime = 0
-	highTime = 0
+  for (idx in 2:nrow(data)) {
+    sgmin <- min(data$sgReading[idx], data$sgReading[idx - 1])
+    sgmax <- max(data$sgReading[idx], data$sgReading[idx - 1])
+    timeStart <- data$time[idx - 1]
+    timeEnd <- data$time[idx]
 
-	for (idx in 2:nrow(data)) {
-		sgmin = min(data$sgReading[idx], data$sgReading[idx-1])
-		sgmax = max(data$sgReading[idx], data$sgReading[idx-1])
-		timeStart = data$time[idx-1]
-		timeEnd = data$time[idx]
+    tPart <- unlist(timePropPart(sgmin, sgmax, timeStart, timeEnd, lowT, highT))
 
-		tPart = unlist(timePropPart(sgmin, sgmax, timeStart, timeEnd, lowT, highT))
+    lowTime <- lowTime + tPart[1]
+    normTime <- normTime + tPart[2]
+    highTime <- highTime + tPart[3]
+  }
 
-		lowTime = lowTime + tPart[1]
-		normTime = normTime + tPart[2]
-		highTime = highTime + tPart[3]
-	}
+  # get time as proportion of total
+  total <- lowTime + normTime + highTime
+  lowTime <- lowTime / total
+  normTime <- normTime / total
+  highTime <- highTime / total
 
-	# get time as proportion of total
-	total = lowTime + normTime + highTime
-	lowTime = lowTime/total
-	normTime = normTime/total
-	highTime = highTime/total
-
-	return(c(lowTime, normTime, highTime))
-
+  return(c(lowTime, normTime, highTime))
 }
 
 # Calculates time proportions for a consecutive pair of SG measurements
@@ -59,44 +56,34 @@ timeProportions <- function(data, lowT, highT) {
 # diabetes thresholds: 3.9<= normal < 10
 # or thresholds can be set in tool args
 timePropPart <- function(sgmin, sgmax, timeStart, timeEnd, lowT, highT) {
-	
-	# init time in ranges
-	lowTime = 0
-	normalTime = 0
-	highTime = 0
+  # init time in ranges
+  lowTime <- 0
+  normalTime <- 0
+  highTime <- 0
 
-	timeDiffSecs = as.numeric(difftime(timeEnd, timeStart, units="secs"))	
+  timeDiffSecs <- as.numeric(difftime(timeEnd, timeStart, units = "secs"))
 
-	# both SGmin and SGmax are in same range (either low, normal or high)
-	if (sgmin<lowT & sgmax<lowT) { 
-		lowTime=lowTime + timeDiffSecs; # both in low range
-	}
-	else if (sgmin>=lowT & sgmin<highT & sgmax>=lowT & sgmax<highT) {
-		 normalTime=normalTime + timeDiffSecs; # both in normal range
-	}
-	else if (sgmin>=highT & sgmax>=highT) {
-		 highTime=highTime + timeDiffSecs; # both in high range
-	}
-	else if (sgmin<lowT) { # sgmin value is in low range and SGmax is in either mid or high range
-	        lowTime=lowTime + timeDiffSecs*(lowT-sgmin)/(sgmax-sgmin)
-	        if (sgmax<highT) {
-			# sgmin and sgmax span low and normal ranges
-	                normalTime=normalTime + timeDiffSecs*(sgmax-lowT)/(sgmax-sgmin)
-	        }
-		else {
-			# sgmin and sgmax span all three ranges
-	            	normalTime=normalTime + timeDiffSecs*(highT-lowT)/(sgmax-sgmin)
-	                highTime=highTime + timeDiffSecs*(sgmax-highT)/(sgmax-sgmin)
-		}
-	}
-	 else if (sgmin<highT) { # sgmin and sgmax values are in normal and high ranges resp.
-        	normalTime=normalTime + timeDiffSecs*(highT-sgmin)/(sgmax-sgmin)
-        	highTime=highTime + timeDiffSecs*(sgmax-highT)/(sgmax-sgmin)
-	}
+  # both SGmin and SGmax are in same range (either low, normal or high)
+  if (sgmin < lowT & sgmax < lowT) {
+    lowTime <- lowTime + timeDiffSecs # both in low range
+  } else if (sgmin >= lowT & sgmin < highT & sgmax >= lowT & sgmax < highT) {
+    normalTime <- normalTime + timeDiffSecs # both in normal range
+  } else if (sgmin >= highT & sgmax >= highT) {
+    highTime <- highTime + timeDiffSecs # both in high range
+  } else if (sgmin < lowT) { # sgmin value is in low range and SGmax is in either mid or high range
+    lowTime <- lowTime + timeDiffSecs * (lowT - sgmin) / (sgmax - sgmin)
+    if (sgmax < highT) {
+      # sgmin and sgmax span low and normal ranges
+      normalTime <- normalTime + timeDiffSecs * (sgmax - lowT) / (sgmax - sgmin)
+    } else {
+      # sgmin and sgmax span all three ranges
+      normalTime <- normalTime + timeDiffSecs * (highT - lowT) / (sgmax - sgmin)
+      highTime <- highTime + timeDiffSecs * (sgmax - highT) / (sgmax - sgmin)
+    }
+  } else if (sgmin < highT) { # sgmin and sgmax values are in normal and high ranges resp.
+    normalTime <- normalTime + timeDiffSecs * (highT - sgmin) / (sgmax - sgmin)
+    highTime <- highTime + timeDiffSecs * (sgmax - highT) / (sgmax - sgmin)
+  }
 
-	return(list(lowTime, normalTime, highTime))
+  return(list(lowTime, normalTime, highTime))
 }
-
-
-
-

@@ -17,47 +17,41 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Derive post-mealtime (postprandial) time-to-peak, and 1hr and 2hr SG levels - the average of the SG readings in the 15 minute period 1 and 2 hrs after each mealtime event, respectively.
 # Returns the average of these statistics per day, and across all days overall.
 mealtimeStatistics <- function(events, raw) {
+  # get rows indexes with meals
+  idxMeal <- which(events$event == "MEAL")
 
-        # get rows indexes with meals
-	idxMeal = which(events$event == "MEAL")
+  meals <- data.frame(time = c(), time_to_peak = c(), postprand_1hr = c(), postprand_2hr = c())
 
-	meals = data.frame(time=c(), time_to_peak=c(), postprand_1hr=c(), postprand_2hr=c())
+  if (length(idxMeal) == 0) {
+    print("No meals")
+    return(methods::new("event", events = meals, meantimetopeak = NA_real_, meanpp1 = NA_real_, meanpp2 = NA_real_))
+  }
 
-	if (length(idxMeal)==0) {
-		print("No meals")
-		return(methods::new("event", events = meals, meantimetopeak = NA_real_, meanpp1 = NA_real_, meanpp2 = NA_real_))
-	}
+  if (length(idxMeal) > 0) {
+    for (i in 1:length(idxMeal)) {
+      idxThisMeal <- idxMeal[i]
 
-	if (length(idxMeal)>0) {
-	for (i in 1:length(idxMeal)) {
+      # time to peak
+      tTP <- timeToPeak(raw, events$time[idxThisMeal])
 
-		idxThisMeal = idxMeal[i]
+      # 1-hr and 2-hr postprandial glucose
+      pp1 <- postprandial(raw, events$time[idxThisMeal], 1)
+      pp2 <- postprandial(raw, events$time[idxThisMeal], 2)
 
-		# time to peak
-		tTP = timeToPeak(raw, events$time[idxThisMeal])
+      meal_sum <- data.frame(time = events$time[idxThisMeal], time_to_peak = tTP, postprand_1hr = pp1, postprand_2hr = pp2)
+      meals <- rbind(meals, meal_sum)
+    }
+  }
 
-		# 1-hr and 2-hr postprandial glucose
-		pp1 = postprandial(raw, events$time[idxThisMeal], 1)
-                pp2 = postprandial(raw, events$time[idxThisMeal], 2)	
+  # average values
+  tTPsMean <- mean(meals$time_to_peak, na.rm = TRUE)
+  pp1sMean <- mean(meals$postprand_1hr, na.rm = TRUE)
+  pp2sMean <- mean(meals$postprand_2hr, na.rm = TRUE)
 
-		meal_sum = data.frame(time=events$time[idxThisMeal], time_to_peak=tTP, postprand_1hr=pp1, postprand_2hr=pp2)		
-		meals = rbind(meals, meal_sum)
+  events <- methods::new("event", events = meals, meantimetopeak = tTPsMean, meanpp1 = pp1sMean, meanpp2 = pp2sMean)
 
-	}
-	}
-
-	# average values
-	tTPsMean = mean(meals$time_to_peak, na.rm=TRUE)
-	pp1sMean = mean(meals$postprand_1hr, na.rm=TRUE)
-	pp2sMean = mean(meals$postprand_2hr, na.rm=TRUE)
-
-	events = methods::new("event", events = meals, meantimetopeak = tTPsMean, meanpp1 = pp1sMean, meanpp2 = pp2sMean)
-
-	return(events)
-
+  return(events)
 }
-

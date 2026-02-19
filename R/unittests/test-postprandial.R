@@ -1,25 +1,23 @@
-
-
 library("testthat")
 source("../postprandial.R")
 source("genTestTimeSeq.R")
 source("../auc.R")
 
-print('postprandial')
+print("postprandial")
 
 ########
-## test 1 
+## test 1
 
 # 1 hr post-event
 
-print('Test 1')
+print("Test 1")
 
-time = genTestTimeSeq(17)
-sgReading = rep(5,times=(12*5))
-sgReading = c(sgReading, rep(6,25))
-raw = data.frame(time, sgReading)
+time <- genTestTimeSeq(17)
+sgReading <- rep(5, times = (12 * 5))
+sgReading <- c(sgReading, rep(6, 25))
+raw <- data.frame(time, sgReading)
 
-postEvent = postprandial(raw, time[1], 1)
+postEvent <- postprandial(raw, time[1], 1)
 expect_equal(postEvent, 6)
 
 ########
@@ -27,14 +25,14 @@ expect_equal(postEvent, 6)
 
 # 1 hr post-event - starts after end of sequence
 
-print('Test 2')
+print("Test 2")
 
-time = genTestTimeSeq(15)
-sgReading = rep(5,times=12)
-sgReading = c(sgReading, 6,6,6)
-raw = data.frame(time, sgReading)
+time <- genTestTimeSeq(15)
+sgReading <- rep(5, times = 12)
+sgReading <- c(sgReading, 6, 6, 6)
+raw <- data.frame(time, sgReading)
 
-postEvent = postprandial(raw, time[5], 1)
+postEvent <- postprandial(raw, time[5], 1)
 expect_equal(postEvent, NA)
 
 
@@ -43,17 +41,15 @@ expect_equal(postEvent, NA)
 
 # 1 hr post-event - starts before end of seq but there aren't 3 consecutive values
 
-print('Test 3')
+print("Test 3")
 
-time = genTestTimeSeq(15)
-sgReading = rep(5,times=12)
-sgReading = c(sgReading, 6,6,6)
-raw = data.frame(time, sgReading)
+time <- genTestTimeSeq(15)
+sgReading <- rep(5, times = 12)
+sgReading <- c(sgReading, 6, 6, 6)
+raw <- data.frame(time, sgReading)
 
-postEvent = postprandial(raw, time[3], 1)
+postEvent <- postprandial(raw, time[3], 1)
 expect_equal(postEvent, NA)
 
 
-
-
-print('postprandial OK')
+print("postprandial OK")

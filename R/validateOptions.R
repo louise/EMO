@@ -17,189 +17,161 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # process arguments supplied to GLU by the user
-validateOptions <- function(indir, outdir=NULL, device=0, daystart='06:30', nightstart='23:00', dayPeriodStartTime=NULL, firstvalid=FALSE, timeformat='%d/%m/%y %H:%M:%S', imputeApproximal=FALSE, imputeOther=FALSE, freq=5, outlierthreshold=5, hypothreshold=NULL, hyperthreshold=NULL, save=FALSE, saveevents=FALSE, pregnancy=FALSE, diabetes=FALSE, mgdl=FALSE) {
+validateOptions <- function(indir, outdir = NULL, device = 0, daystart = "06:30", nightstart = "23:00", dayPeriodStartTime = NULL, firstvalid = FALSE, timeformat = "%d/%m/%y %H:%M:%S", imputeApproximal = FALSE, imputeOther = FALSE, freq = 5, outlierthreshold = 5, hypothreshold = NULL, hyperthreshold = NULL, save = FALSE, saveevents = FALSE, pregnancy = FALSE, diabetes = FALSE, mgdl = FALSE) {
+  if (device < 0 | device > 3) {
+    stop("Device index must be 0 (medtronic ipro2), 1 (Dexcom g2), 2: (Abbott freestyle libre), or 3 (other device, generic format).")
+  }
+
+  if (device == 0) {
+    print("Processing data from Medtronic iPro2 device.")
+  } else if (device == 1) {
+    print("Processing data from Dexcom g2 device.")
+  } else if (device == 2) {
+    print("Processing data from Abbott freestyle libre device.")
+  } else if (device == 3) {
+    print("Other device. Checking data in generic format.")
+  }
 
 
-	if (device<0 | device>3) {
-		stop("Device index must be 0 (medtronic ipro2), 1 (Dexcom g2), 2: (Abbott freestyle libre), or 3 (other device, generic format).")
-	}
+  if (is.null(indir)) {
+    stop("Input data directory argument must be supplied", call. = FALSE)
+  } else if (!file.exists(indir)) {
+    stop(paste("Input data directory indirectory=", indir, " does not exist", sep = ""), call. = FALSE)
+  }
 
-	if (device == 0) {
-		print("Processing data from Medtronic iPro2 device.")
-	}
-	else if (device == 1) {
-		print("Processing data from Dexcom g2 device.")
-	}
-	else if	(device == 2) {
-                print("Processing data from Abbott freestyle libre device.")
-        }
-	else if (device == 3) {
-                print("Other device. Checking data in generic format.")
-        }
+  if (is.null(outdir)) {
+    outdir <- indir
+  }
 
+  # create output directory if it doesn't exist
+  if (!file.exists(outdir)) {
+    print(paste0("Creating output directory: ", outdir))
+    dir.create(outdir)
+  }
 
-        if (is.null(indir)){
-                stop("Input data directory argument must be supplied", call.=FALSE)
-        }
-	else if (!file.exists(indir)) {
-                stop(paste("Input data directory indirectory=", indir, " does not exist", sep=""), call.=FALSE)
-        }
+  validDaysDir <- file.path(outdir, "/validdays/")
+  if (save == TRUE & !file.exists(validDaysDir)) {
+    # make valid days subdirectory if it doesn't exist
 
-	if (is.null(outdir)){
-                outdir = indir
-        }
+    dir.create(validDaysDir)
+  }
 
-	# create output directory if it doesn't exist
-	if (!file.exists(outdir)) {
-		print(paste0('Creating output directory: ', outdir))
-		dir.create(outdir)
-	}
+  if (saveevents == TRUE) {
+    eventsDir <- file.path(outdir, "/events/")
+    dir.create(eventsDir)
+  }
 
-	validDaysDir = file.path(outdir, "/validdays/")
-        if (save ==TRUE & !file.exists(validDaysDir)) {
+  # 	if (!is.null(filename)){
+  #                if (!file.exists(paste(indir, filename, sep=""))) {
+  #                        stop(paste("Input file filename=", indirectory, " in directory ", indir, "does not exist", sep=""), call.=FALSE)
+  #                }
+  #        }
 
-                # make valid days subdirectory if it doesn't exist
+  if (pregnancy == TRUE) {
+    print("Generating statistics for pregnancy study")
+  }
 
-                dir.create(validDaysDir)
-        }
-
-	if (saveevents == TRUE) {
-		eventsDir = file.path(outdir, "/events/")
-		dir.create(eventsDir)
-	}
-
-#	if (!is.null(filename)){
-#                if (!file.exists(paste(indir, filename, sep=""))) {
-#                        stop(paste("Input file filename=", indirectory, " in directory ", indir, "does not exist", sep=""), call.=FALSE)
-#                }
-#        }
-
-	if (pregnancy == TRUE) {
-                print("Generating statistics for pregnancy study")
-        }
-
-#	if (missingsummary == TRUE)	{
-#		print("Generating missing data summary")
-#		write("cgmID, validDay, length, daystart, dayend, numSG, numISIG, eventSummary", file=paste(outdir,"missingSummary.csv", sep=""), append=FALSE)
-#	}
+  # 	if (missingsummary == TRUE)	{
+  # 		print("Generating missing data summary")
+  # 		write("cgmID, validDay, length, daystart, dayend, numSG, numISIG, eventSummary", file=paste(outdir,"missingSummary.csv", sep=""), append=FALSE)
+  # 	}
 
 
-
-	if (is.null(daystart)) {
-		daystart = '06:30'
-		daystart = strptime(daystart, format='%H:%M')
-        }
-	else {
-		# TBC validate time
-		daystart = strptime(daystart, format='%H:%M')
-        }
+  if (is.null(daystart)) {
+    daystart <- "06:30"
+    daystart <- strptime(daystart, format = "%H:%M")
+  } else {
+    # TBC validate time
+    daystart <- strptime(daystart, format = "%H:%M")
+  }
 
 
-	if (is.null(nightstart)) {
-		nightstart = '23:00' # 23:00
-                nightstart = strptime(nightstart, format='%H:%M')
-        }
-	else {
-		nightstart = strptime(nightstart, format='%H:%M')
-		# TBC validate time
-        }
+  if (is.null(nightstart)) {
+    nightstart <- "23:00" # 23:00
+    nightstart <- strptime(nightstart, format = "%H:%M")
+  } else {
+    nightstart <- strptime(nightstart, format = "%H:%M")
+    # TBC validate time
+  }
 
-	if (is.null(dayPeriodStartTime)) {
-		dayPeriodStartTime = nightstart
-	}
-	else {
-		dayPeriodStartTime = strptime(dayPeriodStartTime, format='%H:%M')
-	}
+  if (is.null(dayPeriodStartTime)) {
+    dayPeriodStartTime <- nightstart
+  } else {
+    dayPeriodStartTime <- strptime(dayPeriodStartTime, format = "%H:%M")
+  }
 
 
-
-	print(paste0("Nighttime start: ", format(nightstart, format='%H:%M')))
-	print(paste0("Daytime start: ", format(daystart, format='%H:%M')))
-
-
-	if (firstvalid==TRUE) {
-		print("Day period start: first valid time point")
-	}
-	else {
-		print(paste0("Day period start: ", format(dayPeriodStartTime, format='%H:%M')))
-	}
-
-	if (mgdl==TRUE) {
-		print("Glucose values assumed to be in mg/dL (mgdl arg is TRUE)")
-	}
-	else {
-		print("Glucose values assumed to be in mmol/L (mgdl arg is FALSE)")
-	}
-
-	# both thresholds need to be set or neither
-	if ((is.null(hypothreshold) & !is.null(hyperthreshold)) | (is.null(hyperthreshold) & !is.null(hypothreshold))) {
-		stop("Both hypo and hyper thresholds need to be set (or neither)", call.=FALSE)
-	}
-	else if (is.null(hypothreshold) & is.null(hyperthreshold)) {
-
-		# default settings for low and high thresholds
-
-		if (pregnancy == TRUE) {
-			if (mgdl==TRUE) {
-				hypothreshold = 18*3.5
-                                hyperthreshold = 18*7.8
-			}
-			else {
-				hypothreshold = 3.5
-				hyperthreshold = 7.8
-			}
-			print(paste("Using pregnancy hypo-glycaemia threshold: ", hypothreshold, sep=""))
-	                print(paste("Using pregnancy hyper-glycaemia threshold: ", hyperthreshold, sep=""))
-		}
-		else if (diabetes == TRUE) {
-			if (mgdl==TRUE) {
-				hypothreshold = 18*3.9
-	                        hyperthreshold = 18*10.0
-			}
-			else {
-				hypothreshold = 3.9
-	                        hyperthreshold = 10.0
-			}
-			print(paste("Using diabetes hypo-glycaemia threshold: ", hypothreshold, sep=""))
-                        print(paste("Using diabetes hyper-glycaemia threshold: ", hyperthreshold, sep=""))
-		}
-		else {
-			if (mgdl==TRUE) {
-				hypothreshold = 18*3.3
-	                        hyperthreshold = 18*10.0
-			}
-			else {
-				hypothreshold = 3.3
-	                        hyperthreshold = 10.0
-			}
-			print(paste("Using default hypo-glycaemia threshold: ", hypothreshold, sep=""))
-                        print(paste("Using default hyper-glycaemia threshold: ", hyperthreshold, sep=""))
-		}
-	}
-	else {
-		print(paste("Using hypo-glycaemia threshold: ", hypothreshold, sep=""))
-		print(paste("Using hyper-glycaemia threshold: ", hyperthreshold, sep=""))
-
-	}
+  print(paste0("Nighttime start: ", format(nightstart, format = "%H:%M")))
+  print(paste0("Daytime start: ", format(daystart, format = "%H:%M")))
 
 
-	if (imputeApproximal == TRUE & imputeOther == TRUE) {
-		stop("Cannot use both approximal and other imputation - chose one of these options only.")
-	}
-	else if (imputeApproximal == TRUE) {
-		print("Using approximal imputation method")
-	}
-	else if (imputeOther == TRUE) {
-		print("Using other day imputation method")
-	}
-	else {
-		print("No imputation selected. Using complete days approach.")
-	}
+  if (firstvalid == TRUE) {
+    print("Day period start: first valid time point")
+  } else {
+    print(paste0("Day period start: ", format(dayPeriodStartTime, format = "%H:%M")))
+  }
+
+  if (mgdl == TRUE) {
+    print("Glucose values assumed to be in mg/dL (mgdl arg is TRUE)")
+  } else {
+    print("Glucose values assumed to be in mmol/L (mgdl arg is FALSE)")
+  }
+
+  # both thresholds need to be set or neither
+  if ((is.null(hypothreshold) & !is.null(hyperthreshold)) | (is.null(hyperthreshold) & !is.null(hypothreshold))) {
+    stop("Both hypo and hyper thresholds need to be set (or neither)", call. = FALSE)
+  } else if (is.null(hypothreshold) & is.null(hyperthreshold)) {
+    # default settings for low and high thresholds
+
+    if (pregnancy == TRUE) {
+      if (mgdl == TRUE) {
+        hypothreshold <- 18 * 3.5
+        hyperthreshold <- 18 * 7.8
+      } else {
+        hypothreshold <- 3.5
+        hyperthreshold <- 7.8
+      }
+      print(paste("Using pregnancy hypo-glycaemia threshold: ", hypothreshold, sep = ""))
+      print(paste("Using pregnancy hyper-glycaemia threshold: ", hyperthreshold, sep = ""))
+    } else if (diabetes == TRUE) {
+      if (mgdl == TRUE) {
+        hypothreshold <- 18 * 3.9
+        hyperthreshold <- 18 * 10.0
+      } else {
+        hypothreshold <- 3.9
+        hyperthreshold <- 10.0
+      }
+      print(paste("Using diabetes hypo-glycaemia threshold: ", hypothreshold, sep = ""))
+      print(paste("Using diabetes hyper-glycaemia threshold: ", hyperthreshold, sep = ""))
+    } else {
+      if (mgdl == TRUE) {
+        hypothreshold <- 18 * 3.3
+        hyperthreshold <- 18 * 10.0
+      } else {
+        hypothreshold <- 3.3
+        hyperthreshold <- 10.0
+      }
+      print(paste("Using default hypo-glycaemia threshold: ", hypothreshold, sep = ""))
+      print(paste("Using default hyper-glycaemia threshold: ", hyperthreshold, sep = ""))
+    }
+  } else {
+    print(paste("Using hypo-glycaemia threshold: ", hypothreshold, sep = ""))
+    print(paste("Using hyper-glycaemia threshold: ", hyperthreshold, sep = ""))
+  }
 
 
-	runSettings = methods::new("runSettings", indir=indir, outdir=outdir, device=device, timeformat=timeformat, imputeApproximal=imputeApproximal, imputeOther=imputeOther, epochfrequency=freq, hypothreshold=hypothreshold, hyperthreshold=hyperthreshold, nightstart=nightstart, daystart=daystart, outlierthreshold=outlierthreshold, dayPeriodStartTime=dayPeriodStartTime, firstvalid=firstvalid, save=save, saveevents=saveevents, mgdl=mgdl)
-	return(runSettings)
+  if (imputeApproximal == TRUE & imputeOther == TRUE) {
+    stop("Cannot use both approximal and other imputation - chose one of these options only.")
+  } else if (imputeApproximal == TRUE) {
+    print("Using approximal imputation method")
+  } else if (imputeOther == TRUE) {
+    print("Using other day imputation method")
+  } else {
+    print("No imputation selected. Using complete days approach.")
+  }
 
+
+  runSettings <- methods::new("runSettings", indir = indir, outdir = outdir, device = device, timeformat = timeformat, imputeApproximal = imputeApproximal, imputeOther = imputeOther, epochfrequency = freq, hypothreshold = hypothreshold, hyperthreshold = hyperthreshold, nightstart = nightstart, daystart = daystart, outlierthreshold = outlierthreshold, dayPeriodStartTime = dayPeriodStartTime, firstvalid = firstvalid, save = save, saveevents = saveevents, mgdl = mgdl)
+  return(runSettings)
 }

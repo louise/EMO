@@ -17,22 +17,18 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # Returns valid days from the set of all days
 getValidDays <- function(participantData) {
+  # list of valid days
+  vds <- list()
 
-	# list of valid days
-	vds = list()
+  countDays <- 1
+  for (day in participantData@days) {
+    if (day@validday == TRUE) {
+      vds[[countDays]] <- day
+      countDays <- countDays + 1
+    }
+  }
 
-	countDays=1
-	for (day in participantData@days) {
-		
-		if (day@validday == TRUE) {
-			vds[[countDays]] = day
-			countDays = countDays + 1
-		}
-
-	}
-
-	return(vds)
+  return(vds)
 }

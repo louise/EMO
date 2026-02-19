@@ -17,34 +17,31 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # For each valid day in validDays, generate the start dates/time of each valid day
 # Returns a data frame - the date/time string values of each day
 datesByDay <- function(validDays) {
+  dates <- c()
 
-	dates = c()
+  # column names for each date/time string value we generate
+  cnames <- c()
 
-	# column names for each date/time string value we generate	
-	cnames = c()
+  count <- 1
 
-	count=1
+  # for each valid day, get the first date/time of the day
+  for (vd in validDays) {
+    # date/time of the start of this day
+    glucoseThis <- vd@glucose
+    dateVD <- format(glucoseThis$time[1], "%Y-%m-%d %H:%M:%S %Z")
 
-	# for each valid day, get the first date/time of the day
-	for (vd in validDays) {
-		
-		# date/time of the start of this day
-		glucoseThis = vd@glucose
-		dateVD = format(glucoseThis$time[1], "%Y-%m-%d %H:%M:%S %Z")
+    dates <- append(dates, dateVD)
+    cnames <- append(cnames, paste("datetime_start_day", count, sep = ""))
 
-		dates = append(dates, dateVD)
-		cnames = append(cnames, paste("datetime_start_day", count, sep=""))
+    count <- count + 1
+  }
 
-                count=count+1
-	}
+  # set column names for date values
+  res <- rbind(dates)
+  colnames(res) <- cnames
 
-	# set column names for date values
-	res = rbind(dates)
-	colnames(res) = cnames
-
-	return(res)
+  return(res)
 }

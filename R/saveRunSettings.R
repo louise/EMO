@@ -17,29 +17,26 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-
 # save arguments supplied to GLU by the user, for reporting in publications
 saveRunSettings <- function(runSettings) {
+  sink(paste0(runSettings@outdir, "/run-settings.txt"))
 
-	sink(paste0(runSettings@outdir, '/run-settings.txt'))
+  print(paste0("indir: ", runSettings@indir))
+  print(paste0("outdir: ", runSettings@outdir))
+  print(paste0("device: ", runSettings@device))
+  print(paste0("daystart: ", runSettings@daystart))
+  print(paste0("nightstart: ", runSettings@nightstart))
+  print(paste0("timeformat: ", runSettings@timeformat))
+  print(paste0("imputeApproximal: ", runSettings@imputeApproximal))
+  print(paste0("imputeOther: ", runSettings@imputeOther))
+  print(paste0("freq: ", runSettings@freq))
+  print(paste0("outlierthreshold: ", runSettings@outlierthreshold))
+  print(paste0("hypothreshold: ", runSettings@hypothreshold))
+  print(paste0("hyperthreshold: ", runSettings@hyperthreshold))
+  print(paste0("save: ", runSettings@save))
+  print(paste0("pregnancy: ", runSettings@pregnancy))
+  print(paste0("diabetes: ", runSettings@diabetes))
+  print(paste0("mgdl: ", runSettings@mgdl))
 
-	print(paste0('indir: ', runSettings@indir))
-	print(paste0('outdir: ', runSettings@outdir))
-	print(paste0('device: ', runSettings@device))
-	print(paste0('daystart: ', runSettings@daystart))
-	print(paste0('nightstart: ', runSettings@nightstart))
-	print(paste0('timeformat: ', runSettings@timeformat))
-	print(paste0('imputeApproximal: ', runSettings@imputeApproximal))
-	print(paste0('imputeOther: ', runSettings@imputeOther))
-	print(paste0('freq: ', runSettings@freq))
-	print(paste0('outlierthreshold: ', runSettings@outlierthreshold))
-	print(paste0('hypothreshold: ', runSettings@hypothreshold))
-	print(paste0('hyperthreshold: ', runSettings@hyperthreshold))
-	print(paste0('save: ', runSettings@save))
-	print(paste0('pregnancy: ', runSettings@pregnancy))
-	print(paste0('diabetes: ', runSettings@diabetes))
-	print(paste0('mgdl: ', runSettings@mgdl))
-
-	sink()
-
+  sink()
 }
