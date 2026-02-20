@@ -19,34 +19,18 @@
 
 # Saves cleaned CGM data to file.
 # This includes the interpolated timepoints that mark the precise start and end of each day
-saveCleanData <- function(validDays, userID, rs) {
+saveCleanData <- function(raw, userID, rs) {
   if (rs@save == TRUE) {
     print("Saving clean data ...")
 
-    first <- TRUE
-
-    if (length(validDays) >= 1) {
-      for (vd in validDays) {
-        vday <- vd@glucose
-
-        if (first == TRUE) {
-          rawValid <- vday
-          first <- FALSE
-        } else {
-          rawValid <- rbind(rawValid, vday)
-        }
-      }
-    }
-
     namePrefix <- userID
-    if (rs@imputeApproximal == TRUE) {
-      namePrefix <- paste(namePrefix, "-impute-approximal", sep = "")
-    } else if (rs@imputeOther == TRUE) {
-      namePrefix <- paste(namePrefix, "-impute-other", sep = "")
+    if (rs@imputeX == TRUE) {
+      namePrefix <- paste(namePrefix, "-impute-x", sep = "")
+    } else {
+      namePrefix <- paste(namePrefix, "-impute-linear", sep = "")
     }
-
 
     # save clean data
-    write.table(rawValid, file = paste(rs@outdir, "/validdays/cgmValidDays", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE, na = "")
+    write.table(raw$emotions, file = paste(rs@outdir, "/processed-", namePrefix, ".csv", sep = ""), sep = ",", quote = FALSE, row.names = FALSE, na = "")
   }
 }

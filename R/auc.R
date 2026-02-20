@@ -20,9 +20,10 @@
 # Calculate AUC using trapezoid method.
 # Returns AUC value for sequence raw.
 auc <- function(raw) {
-  # get only rows with SG readings
-  sgIdx <- which(!is.na(raw$sgReading))
-  data <- raw[sgIdx, ]
+
+  if (any(is.na(raw))) {
+    stop("there are NAs but there shouldn't be")
+  }
 
   # total time period of SG data in raw
   timeLengthPeriod <- 0
@@ -30,17 +31,16 @@ auc <- function(raw) {
   # for each timepoint, add auc between this timepoint and the previous timepoint
   aucValue <- 0
 
-  if (nrow(data) > 1) {
-    for (idx in 2:nrow(data)) {
-      timeDiffMins <- as.numeric(difftime(data$time[idx], data$time[idx - 1], units = "mins"))
+  if (length(raw) > 1) {
+    for (idx in 2:length(raw)) {
+      timeDiffSecs <- 0.02 #as.numeric(difftime(data$time[idx], data$time[idx - 1], units = "mins"))
 
-      # only include if timepoint are 1 minute apart
-      if (timeDiffMins == 1) {
-        trapezoid <- (data$sgReading[idx] + data$sgReading[idx - 1]) * timeDiffMins * 0.5
+      #if (timeDiffMins == 1) {
+        trapezoid <- (raw[idx] + raw[idx - 1]) * timeDiffSecs * 0.5
         aucValue <- aucValue + trapezoid
 
-        timeLengthPeriod <- timeLengthPeriod + timeDiffMins
-      }
+        timeLengthPeriod <- timeLengthPeriod + timeDiffSecs
+      #}
     }
   }
 

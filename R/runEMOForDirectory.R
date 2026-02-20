@@ -16,23 +16,17 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+#' Run EMO for all files in a directory
+#'
+#' @param indir Path of input directory containing input files.
+#' @param outdir Path of output directory where derived data will be stored.
+#' @param imputeX Logical.
+#' @param lowthreshold Numeric.
+#' @param highthreshold Numeric.
+#' @param save Logical. If TRUE then derived CGM sequence(s) are stored.
+#' @export
+runEMOForDirectory <- function(indir, outdir = NULL, imputeX = FALSE, lowthreshold = NULL, highthreshold = NULL, save = FALSE, saveevents = FALSE) {
+  files <- list.files(indir, pattern = ".*\\..*", full.names = FALSE)
 
-# sets a prefix string for the derived data file name
-# rs: run options
-# if running GLU for a specific file then includes user ID.
-# if running GLU with imputeApproximal option then includes 'impute-approximal'
-# if running GLU with imputeOther option then includes 'impute-other'
-# E.g. '-1234-imputed'
-derivedFilePrefix <- function(rs) {
-  # set name prefix for derived data file
-  namePrefix <- ""
-
-  if (rs@imputeX == TRUE) {
-    namePrefix <- paste(namePrefix, "-impute-x", sep = "")
-  } else {
-    namePrefix <- paste(namePrefix, "-impute-linear", sep = "")
-  }
-
-
-  return(namePrefix)
+  runEMOForFiles(files, indir, outdir = outdir, imputeX = imputeX, lowthreshold = lowthreshold, highthreshold = highthreshold, save = save, saveevents = saveevents)
 }

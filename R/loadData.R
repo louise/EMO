@@ -22,96 +22,46 @@
 # Returns list object containing participant ID and 3 data frames: sg, bg and events.
 
 loadData <- function(fileName, userID, rs) {
-  dir <- rs@outdir
+  dir <- rs@indir
   rawData <- read.table(paste(dir, "/", fileName, sep = ""), sep = ",", header = 1)
 
   ## REQUIRED COLUMNS
   ## check it has required fields
-  ## and rename them
-
-  colName <- "sgReading"
-  idxSGReading <- which(names(rawData) == colName)
-  if (length(idxSGReading) == 0) {
+  
+  colName <- "Video.Time"
+  idx <- which(names(rawData) == colName)
+  if (length(idx) == 0) {
     stop(paste("Column missing from input file:", colName), call. = FALSE)
   }
 
-  colName <- "time"
-  idxT <- which(names(rawData) == colName)
-  if (length(idxT) == 0) {
-    stop(paste("Column missing from input file:", colName), call. = FALSE)
-  }
-  rawData$time <- strptime(rawData$time, format = rs@timeformat)
+  # change time stamps to just be number of seconds from the start, with a 0.02 second gap
+  rawData$Video.Time <- 0.02*(1:nrow(rawData))
+  
+  # events <- NULL
+  # if (length(which(names(rawData) == "meal") > 0)) {
+  #   eventsMeal <- rawData[which(!is.na(rawData$meal) & rawData$meal != ""), ]
 
-  if (length(which(!is.na(rawData$time))) == 0) {
-    stop(paste("Timestamp column format is not right"))
-  }
+  #   if (nrow(eventsMeal) > 0) {
+  #     # make sure all events are rounded to the nearest minute
+  #     eventsMeal$time <- trunc(eventsMeal$time, "secs")
+  #     eventsMeal$event <- "MEAL"
+  #     events <- eventsMeal
+  #   }
+  # }
 
-  ## OPTIONAL COLUMNS
-  ## rename optional columns if they exist
+  #events <- events[, c("time", "event")]
 
+  # assume emotions are all columns exept Video.Time
+  emotionsCols <- setdiff(names(rawData), "Video.Time")
+  
+  # convert emotion columns to numeric so that all the error codes become NA
+  rawData[ , emotionsCols] <- lapply(rawData[ , emotionsCols], as.numeric)
+  
+  # make column to indication the row has been imputed
+  rawData$imputed <- F
 
-  ## CREATE OUR DATA OBJECT
-  ## seperate data into types
-
-  sgReadings <- rawData[which(!is.na(rawData$sgReading)), c("time", "sgReading")]
-  if (nrow(sgReadings) > 0) {
-    sgReadings$impute <- ""
-  }
-
-  bgReadings <- NULL
-  if (length(which(names(rawData) == "bgReading") > 0)) {
-    bgReadings <- rawData[which(!is.na(rawData$bgReading)), c("time", "bgReading")]
-  }
-
-  events <- NULL
-  if (length(which(names(rawData) == "meal") > 0)) {
-    eventsMeal <- rawData[which(!is.na(rawData$meal) & rawData$meal != ""), ]
-
-    if (nrow(eventsMeal) > 0) {
-      # make sure all events are rounded to the nearest minute
-      eventsMeal$time <- trunc(eventsMeal$time, "secs")
-      eventsMeal$event <- "MEAL"
-      events <- eventsMeal
-    }
-  }
-
-  if (length(which(tolower(names(rawData)) == "exercise") > 0)) {
-    colEx <- colnames(rawData)[which(tolower(names(rawData)) == "exercise")]
-    eventsEx <- rawData[which(!is.na(rawData[, colEx]) & rawData[, colEx] != ""), ]
-
-    if (nrow(eventsEx) > 0) {
-      # make sure all	events are rounded to the nearest minute
-      eventsEx$time <- trunc(eventsEx$time, "secs")
-
-      eventsEx$event <- "EXERCISE"
-      if (is.null(events)) {
-        events <- eventsEx
-      } else {
-        events <- rbind(events, eventsEx)
-      }
-    }
-  }
-  if (length(which(tolower(names(rawData)) == "medication") > 0)) {
-    colMed <- colnames(rawData)[which(tolower(names(rawData)) == "medication")]
-    eventsMed <- rawData[which(!is.na(rawData[, colMed]) & rawData[, colMed] != ""), ]
-
-    if (nrow(eventsMed) > 0) {
-      # make sure all events are rounded to the nearest minute
-      eventsMed$time <- trunc(eventsMed$time, "secs")
-
-      eventsMed$event <- "MEDICATION"
-      if (is.null(events)) {
-        events <- eventsMed
-      } else {
-        events <- rbind(events, eventsMed)
-      }
-    }
-  }
-
-  events <- events[, c("time", "event")]
-
-  participantData <- list(id = userID, sg = sgReadings, bg = bgReadings, events = events)
-
+  # participantData <- list(id = userID, sg = sgReadings, bg = bgReadings, events = events)
+  participantData <- list(id = userID, emotions = rawData, emotionColumns = emotionsCols)
 
   return(participantData)
 }

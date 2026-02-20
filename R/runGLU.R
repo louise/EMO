@@ -34,5 +34,5 @@ runGLU <- function(opt) {
     files <- list.files(opt$indir, pattern = ".*\\..*", full.names = FALSE)
   }
 
-  runGLUForFiles(files = files, indir = opt$indir, outdir = opt$outdir, device = opt$device, daystart = opt$daystart, nightstart = opt$nightstart, dayPeriodStartTime = opt$dayPeriodStartTime, timeformat = opt$timeformat, imputeApproximal = opt$impute_approximal, imputeOther = opt$impute_other, freq = opt$freq, outlierthreshold = opt$outlierthreshold, hypothreshold = opt$hypothreshold, hyperthreshold = opt$hyperthreshold, save = opt$save, saveevents = opt$saveevents, pregnancy = opt$pregnancy, diabetes = opt$diabetes)
+  runGLUForFiles(files = files, indir = opt$indir, outdir = opt$outdir, imputeX = opt$impute_X, lowthreshold = opt$lowthreshold, highthreshold = opt$highthreshold, save = opt$save, saveevents = opt$saveevents)
 }

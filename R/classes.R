@@ -69,23 +69,10 @@ setClass("runSettings",
   slots = c(
     indir = "character",
     outdir = "character",
-    device = "numeric",
-    daystart = "POSIXlt",
-    nightstart = "POSIXlt",
-    dayPeriodStartTime = "POSIXlt",
-    firstvalid = "logical",
-    timeformat = "character",
-    imputeApproximal = "logical",
-    imputeOther = "logical",
-    freq = "numeric",
-    outlierthreshold = "numeric",
-    hypothreshold = "numeric",
-    hyperthreshold = "numeric",
+    imputeX = "logical",
+    lowthreshold = "numeric",
+    highthreshold = "numeric",
     save = "logical",
-    saveevents = "logical",
-    pregnancy = "logical",
-    diabetes = "logical",
-    epochfrequency = "numeric",
-    mgdl = "logical"
+    saveevents = "logical"
   )
 )
