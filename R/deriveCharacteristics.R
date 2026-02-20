@@ -17,12 +17,12 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-# Derives variables that describe characteristics of the SG sequence.
+# Derives variables that describe characteristics of the time-series.
 # Returns a data frame containing these characteristics values.
 deriveCharacteristics <- function(raw, userIDdf, rs) {
     
   print("MAD")
-  # Median absolute deviation for each day
+  # Median absolute deviation
   emotionData <- raw$emotions
   madValues <- data.frame(as.list(sapply(emotionData[,raw$emotionColumns], mad, constant=1, na.rm=T)))
   names(madValues) <- paste0(names(madValues), "_mad")
@@ -42,12 +42,6 @@ deriveCharacteristics <- function(raw, userIDdf, rs) {
   labilityValues <- data.frame(as.list(sapply(emotionData[,raw$emotionColumns], SGVP, stdx=T)))
   names(labilityValues) <- paste0(names(labilityValues), "_lability")
 
-  # ## add number of valid days to derived statistics
-  # othervars <- c(length(validDays))
-  # othervars <- rbind(othervars)
-  # colnames(othervars) <- c("numValidDays")
-
-
   # print("Events")
   # meal time statistics
   # eventValues <- eventStatisticsByDay(validDays, rs, userIDdf)
@@ -58,7 +52,7 @@ deriveCharacteristics <- function(raw, userIDdf, rs) {
   numRows <- nrow(emotionData)
   numRowsImputed <- length(which(emotionData$imputed==T))
   
-  # get the distribution of the length of the missing runs (blocks)
+  # distribution of the length of the missing runs (blocks)
   r <- rle(emotionData$imputed)
   true_runs <- r$lengths[r$values]
   imputedBlockDistribution <- data.frame(as.list(quantile(true_runs, probs = c(0, 0.25, 0.5, 0.75, 1))))
