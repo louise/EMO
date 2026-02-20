@@ -34,5 +34,5 @@ runEMO <- function(opt) {
     files <- list.files(opt$indir, pattern = ".*\\..*", full.names = FALSE)
   }
 
-  runGLUForFiles(files = files, indir = opt$indir, outdir = opt$outdir, imputeX = opt$impute_X, lowthreshold = opt$lowthreshold, highthreshold = opt$highthreshold, save = opt$save, saveevents = opt$saveevents)
+  runEMOForFiles(files = files, indir = opt$indir, outdir = opt$outdir, imputeX = opt$impute_X, lowthreshold = opt$lowthreshold, highthreshold = opt$highthreshold, save = opt$save, saveevents = opt$saveevents)
 }
