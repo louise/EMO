@@ -10,12 +10,12 @@ EMO takes emotion data derived from videos as input, and derives a set of charac
 
 1. Median absolute deviation (MAD)
 2. Area under the curve (AUC)
-TBC3. Proportion of time spent in low, normal and high values
-4. Standardised glycaemic variability percentage (sGVP)
-TBC5. Event statistics:
-TBC    1. Time to peak
-TBC    2. 1-hour event AUC
-TBC    3. 2-hour event AUC
+3. TBCProportion of time spent in low, normal and high values
+4. TBCStandardised glycaemic variability percentage (sGVP)
+5. TBCEvent statistics:
+    1. Time to peak
+    2. 1-hour event AUC
+    3. 2-hour event AUC
 
 
 ## 2. License
@@ -95,7 +95,7 @@ Optional columns:
 
 Column | Description
 -------|--------
-#event         | Optional column, which if not blank indicates an event timestamp TODO
+event         | Optional column, which if not blank indicates an event timestamp TODO
 
 
 
@@ -125,11 +125,11 @@ The median of the absolute difference of each value from the median value.
  - Trapezoid method (linear interpolation between the discrete measurements) as described [here](https://www.boomer.org/c/php/pk0204a.php).
 
 
-TBC3. Proportion of time spent in low, normal and high SG ranges, per valid day and mean across all valid days
-TBC
-TBCTo calculate these proportions we linearly interpolate between adjacent values to calculate the proportion of time within each range.
-TBC
-TBCThe following pseudocode (for pregnancy thresholds) demonstrates the process we use.
+3. TBC Proportion of time spent in low, normal and high SG ranges, per valid day and mean across all valid days
+
+To calculate these proportions we linearly interpolate between adjacent values to calculate the proportion of time within each range.
+
+The following pseudocode (for pregnancy thresholds) demonstrates the process we use.
 
 
 4. Standardised glycaemic variability percentage (sGVP), per included day and mean across all included days
@@ -146,23 +146,23 @@ Standardisation is performed as:
 ```
 
 
-TBC6. Event time to peak
-TBC
-TBCThe number of seconds from the event to the next emotion peak.
-TBC
-TBCIn the simple case the peak is the nearest subsequent time t, after the event where emotion(t-1) < emotion(t) > emotion(t+1).
-TBC
-TBCIn the case where the peak is on a plateau, then (i.e. there are multiple timepoints on the peak with the same peak value) 
-TBCthen we define the peak time point as the nearest time point to the event on this plateau.
-TBC
-TBC
-TBC7. Post-event AUC
-TBC
-TBCAn event is either TBC, TBC or TBC.
-TBC
-TBCPost-event AUC can be either 1-hour or 2-hour. 
-TBC
-TBCThe `n`-hr post-event AUC is the mean of the emotion values during the 15 minute period occuring `n` hrs after the event.
+6. TBC Event time to peak
+
+The number of seconds from the event to the next emotion peak.
+
+In the simple case the peak is the nearest subsequent time t, after the event where emotion(t-1) < emotion(t) > emotion(t+1).
+
+In the case where the peak is on a plateau, then (i.e. there are multiple timepoints on the peak with the same peak value) 
+then we define the peak time point as the nearest time point to the event on this plateau.
+
+
+7. TBC Post-event AUC
+
+An event is either TBC, TBC or TBC.
+
+Post-event AUC can be either 1-hour or 2-hour. 
+
+The `n`-hr post-event AUC is the mean of the emotion values during the 15 minute period occuring `n` hrs after the event.
 
 
 
