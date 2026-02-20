@@ -35,7 +35,7 @@ deriveCharacteristics <- function(raw, userIDdf, rs) {
   names(aucValues) <- paste0(names(aucValues), "_auc")
 
   # print("Time proportions")
-  # # Proportion of time spent in low, medium and high glucose ranges, on each complete day
+  # # Proportion of time spent in low, medium and high ranges
   # proportions <- timeProportionsByDay(validDays, rs@hypothreshold, rs@hyperthreshold)
 
   print("sGVP")
