@@ -1,7 +1,7 @@
 
 
-# load the GLU package
-library('GLU')
+# load the EMO package
+library('EMO')
 
 options(warn=2)
 
@@ -10,7 +10,7 @@ options(warn=2)
 opt = parseArgs()
 
 
-# run GLU using command line arguments
-runGLU(opt)
+# run EMO using command line arguments
+runEMO(opt)
 
 
