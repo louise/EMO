@@ -21,7 +21,7 @@
 #'
 #' @param opt List containing command line arguments.
 #' @export
-runGLU <- function(opt) {
+runEMO <- function(opt) {
   # if user specifies a filename then process this, otherwise process all other files in indir
   if (!is.null(opt$filename)) {
     fullfilename <- paste0(opt$indir, opt$filename)

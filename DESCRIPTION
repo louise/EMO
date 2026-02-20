@@ -12,4 +12,4 @@ Encoding: UTF-8
 Depends: ggplot2 (>= 3.1.1)
 Imports: data.table (>= 1.12.2), optparse (>= 1.6.2)
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.3.3
