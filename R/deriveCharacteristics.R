@@ -53,8 +53,22 @@ deriveCharacteristics <- function(raw, userIDdf, rs) {
   # eventValues <- eventStatisticsByDay(validDays, rs, userIDdf)
   eventValues <- NULL
 
+  # missingness
+  print("missing summary")
+  numRows <- nrow(emotionData)
+  numRowsImputed <- length(which(emotionData$imputed==T))
+  
+  # get the distribution of the length of the missing runs (blocks)
+  r <- rle(emotionData$imputed)
+  true_runs <- r$lengths[r$values]
+  imputedBlockDistribution <- data.frame(as.list(quantile(true_runs, probs = c(0, 0.25, 0.5, 0.75, 1))))
+  names(imputedBlockDistribution) <- c('missing_block_Q0','missing_block_Q25','missing_block_Q50','missing_block_Q75','missing_block_Q100')
+  
+  missingnessDF <- data.frame(totalRows=numRows, numImputed=numRowsImputed)
+  missingnessDF <- cbind(missingnessDF, imputedBlockDistribution)
+  
   # whole result row for this participant
-  summThis <- cbind(userIDdf, madValues, aucValues, labilityValues)
+  summThis <- cbind(userIDdf, madValues, aucValues, labilityValues, missingnessDF)
   
   if (!is.null(eventValues)) {
     summThis <- cbind.data.frame(summThis, eventValues)
