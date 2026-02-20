@@ -17,44 +17,6 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-# called when day is created
-# ensures day has 1441 glucose values (1 per minute plus the last minute of the next day for interpolation)
-check_day <- function(object) {
-  errors <- character()
-
-  length_glucose <- nrow(object@glucose)
-
-  if (length_glucose != 1441) {
-    msg <- paste("Glucose is length ", length_glucose, ".  Should be 1441", sep = "")
-    errors <- c(errors, msg)
-  }
-
-  if (length(errors) == 0) TRUE else errors
-}
-
-
-setClass("day",
-  slots = c(
-    glucose = "data.frame",
-    dayidx = "numeric",
-    validday = "logical",
-    events = "data.frame",
-    bg = "data.frame"
-  ),
-  validity = check_day
-)
-
-
-setClass("participantData",
-  slots = c(
-    nightstart = "POSIXlt",
-    daystart = "POSIXlt",
-    dayfirst = "logical",
-    days = "list",
-    numvaliddays = "numeric"
-  )
-)
-
 setClass("event",
   slots = c(
     events = "data.frame",
