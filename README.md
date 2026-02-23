@@ -11,7 +11,7 @@ EMO takes emotion data derived from videos as input, and derives a set of charac
 1. Median absolute deviation (MAD)
 2. Area under the curve (AUC)
 3. TBCProportion of time spent in low, normal and high values
-4. TBCStandardised glycaemic variability percentage (sGVP)
+4. Standardised glycaemic variability percentage (sGVP)
 5. TBCEvent statistics:
     1. Time to peak
     2. 1-hour event AUC
