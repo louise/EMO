@@ -42,10 +42,8 @@ deriveCharacteristics <- function(raw, userIDdf, rs) {
   labilityValues <- data.frame(as.list(sapply(emotionData[,raw$emotionColumns], SGVP, stdx=T)))
   names(labilityValues) <- paste0(names(labilityValues), "_lability")
 
-  # print("Events")
-  # meal time statistics
-  # eventValues <- eventStatisticsByDay(validDays, rs, userIDdf)
-  eventValues <- NULL
+  print("Events")
+  eventValues <- eventStatistics(raw)
 
   # missingness
   print("missing summary")

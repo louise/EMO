@@ -53,7 +53,7 @@ loadData <- function(fileName, userID, rs) {
   #events <- events[, c("time", "event")]
 
   # assume emotions are all columns exept Video.Time
-  emotionsCols <- setdiff(names(rawData), c("video.time"))
+  emotionsCols <- setdiff(names(rawData), c("video.time", 'event'))
   
   # convert emotion columns to numeric so that all the error codes become NA
   rawData[ , emotionsCols] <- lapply(rawData[ , emotionsCols], as.numeric)

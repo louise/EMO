@@ -17,14 +17,14 @@
 # DEALINGS IN THE SOFTWARE.
 
 
-setClass("event",
-  slots = c(
-    events = "data.frame",
-    meantimetopeak = "numeric",
-    meanpp1 = "numeric",
-    meanpp2 = "numeric"
-  )
-)
+# setClass("event",
+#   slots = c(
+#     events = "data.frame",
+#     meantimetopeak = "numeric",
+#     meanpp1 = "numeric",
+#     meanpp2 = "numeric"
+#   )
+# )
 
 
 setClass("runSettings",
