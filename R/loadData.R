@@ -24,18 +24,19 @@
 loadData <- function(fileName, userID, rs) {
   dir <- rs@indir
   rawData <- read.table(paste(dir, "/", fileName, sep = ""), sep = ",", header = 1)
+  colnames(rawData) <- tolower(colnames(rawData))
 
   ## REQUIRED COLUMNS
   ## check it has required fields
   
-  colName <- "Video.Time"
+  colName <- "video.time"
   idx <- which(names(rawData) == colName)
   if (length(idx) == 0) {
     stop(paste("Column missing from input file:", colName), call. = FALSE)
   }
 
   # change time stamps to just be number of seconds from the start, with a 0.02 second gap
-  rawData$Video.Time <- 0.02*(1:nrow(rawData))
+  rawData$video.time <- 0.02*(1:nrow(rawData))
   
   # events <- NULL
   # if (length(which(names(rawData) == "meal") > 0)) {
@@ -52,7 +53,7 @@ loadData <- function(fileName, userID, rs) {
   #events <- events[, c("time", "event")]
 
   # assume emotions are all columns exept Video.Time
-  emotionsCols <- setdiff(names(rawData), "Video.Time")
+  emotionsCols <- setdiff(names(rawData), c("video.time"))
   
   # convert emotion columns to numeric so that all the error codes become NA
   rawData[ , emotionsCols] <- lapply(rawData[ , emotionsCols], as.numeric)

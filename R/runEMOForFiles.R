@@ -70,14 +70,14 @@ runEMOForFiles <- function(files, indir, outdir = NULL, imputeX = FALSE, lowthre
     raw <- loadData(f, userID, rs)
 
     # impute missing periods - assume all emotions have same missingness
-    if (any(is.na(raw$emotions[,"Neutral"]))) {
+    if (any(is.na(raw$emotions[,"neutral"]))) {
       if (rs@imputeX == FALSE) {
         print("imputing missing timepoints ...")
 
         sink(paste0(outdir, "/logging-impute.txt"), append = TRUE)
         print(paste0("*********** IMPUTING ", userID, " ***********"))
           
-        raw$emotions[which(is.na(raw$emotions[,"Neutral"])),"imputed"] <- T
+        raw$emotions[which(is.na(raw$emotions[,"neutral"])),"imputed"] <- T
 
         # linear interpolation
         emoCols = raw$emotionColumns
@@ -91,8 +91,8 @@ runEMOForFiles <- function(files, indir, outdir = NULL, imputeX = FALSE, lowthre
     }
 
     # remove start and end missingness that could not be imputed - assume all emotions have same missingness
-    if (any(is.na(raw$emotions[,"Neutral"]))) {
-      naRow <- which(is.na(raw$emotions[,"Neutral"]))
+    if (any(is.na(raw$emotions[,"neutral"]))) {
+      naRow <- which(is.na(raw$emotions[,"neutral"]))
       raw$emotions <- raw$emotions[-naRow, ]
     }
 
