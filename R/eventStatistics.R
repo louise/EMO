@@ -42,7 +42,7 @@ eventStatistics <- function(raw) {
 
 }
 
-# get the mean AUC across all event occurences for a particular event type
+# get the mean AUC and MAD across all event occurences for a particular event type
 eventStatisticsByType <- function(eventType, raw) {
 
   # get last possible index with 3 seconds after
@@ -60,19 +60,23 @@ eventStatisticsByType <- function(eventType, raw) {
 
     # 3 second post event AUC
     aucValues <- data.frame(as.list(sapply(raw$emotions[idxThisEv:(idxThisEv+150-1),raw$emotionColumns], auc)))
-
+    madValues <- data.frame(as.list(sapply(raw$emotions[idxThisEv:(idxThisEv+150-1),raw$emotionColumns], mad, constant=1, na.rm=T)))
+    
+    # set names for auc and mad values
+    names(aucValues) <- paste0(names(aucValues), "_event_auc")
+    names(madValues) <- paste0(names(madValues), "_event_mad")
+    
     if (i==1) {
-      evVals = aucValues
+      evVals = cbind(aucValues, madValues)
     }
     else {
-      evVals <- rbind(evVals, aucValues)
+      evVals <- rbind(evVals, cbind(aucValues, madValues))
     }
 
   }
 
   # get mean across all occurences of this event type
-  evVals = colMeans(evVals, na.rm = TRUE)  
-  names(evVals) <- paste0(names(evVals), "_event_auc")
+  evVals = colMeans(evVals, na.rm = TRUE)
 
   # add number of events
   evVals["events_n"] <- length(idxEv)
