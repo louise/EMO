@@ -12,8 +12,8 @@ EMO takes emotion data derived from videos as input, and derives a set of charac
 2. Area under the curve (AUC)
 3. TBCProportion of time spent in low, normal and high values
 4. Standardised glycaemic variability percentage (sGVP)
-5. TBCEvent statistics:
-    1. Time to peak
+5. Event statistics:
+    TBC1. Time to peak
     2. 1-hour event AUC
     3. 2-hour event AUC
 
@@ -156,14 +156,13 @@ In the case where the peak is on a plateau, then (i.e. there are multiple timepo
 then we define the peak time point as the nearest time point to the event on this plateau.
 
 
-7. TBC Post-event AUC
+7. Post-event AUC and MAD
 
-An event is either TBC, TBC or TBC.
+Events should be provided as a specific word/code in the events column. Any timepoint (row) without an event should have the value 'none'.
 
-Post-event AUC can be either 1-hour or 2-hour. 
+Post-event AUC and MAD are calculated using the 3 second period directly after the event has occurred.
 
-The `n`-hr post-event AUC is the mean of the emotion values during the 15 minute period occuring `n` hrs after the event.
-
+AUC is calculated as the mean per second (as with the overall AUC), calculated by dividing by the number of seconds.
 
 
 
