@@ -13,7 +13,7 @@ EMO takes emotion data derived from videos as input, and derives a set of charac
 3. TBCProportion of time spent in low, normal and high values
 4. Standardised glycaemic variability percentage (sGVP)
 5. Event statistics:
-    TBC1. Time to peak
+    1. TBCTime to peak
     2. 1-hour event AUC
     3. 2-hour event AUC
 
